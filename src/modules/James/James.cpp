@@ -1,5 +1,6 @@
 #include "DanielDavies.hpp"
 #include "JamesClockTracker.hpp"
+#include "JamesPatternGenerator.hpp"
 #include "widgets/Knobs.hpp"
 #include "widgets/Buttons.hpp"
 #include "utilities/IgnoreClockAfterResetTimer.hpp"
@@ -118,12 +119,14 @@ struct James : Module
 		KNOB_STEP_COUNT_PARAM,
 		KNOB_CLOCK_SPEED_PARAM,
 		SWITCH_GATE_MODE_PARAM,
+		SWITCH_RANDOM_PARAM,
 		PARAMS_LEN
 	};
 	enum InputId
 	{
 		IN_CLOCK_INPUT,
 		IN_RESET_INPUT,
+		IN_RANDOM_INPUT,
 		INPUTS_LEN
 	};
 	enum OutputId
@@ -262,6 +265,7 @@ struct James : Module
 		configParam(KNOB_STEP_COUNT_PARAM, 0.f, 16.f, 16.f, "Step count");
 		configParam(KNOB_CLOCK_SPEED_PARAM, 0.f, 1.f, 0.5f, "Speed");
 		configSwitch(SWITCH_GATE_MODE_PARAM, 0, 1, 1, "Gate Mode", {"Continuous", "Trigger"});
+		configButton(SWITCH_RANDOM_PARAM, "Random");
 
 		configSwitch(SWITCH_GATE_R0_C0_PARAM, 0, 1, 0, "Gate", {"Off", "On"});
 		configSwitch(SWITCH_GATE_R0_C1_PARAM, 0, 1, 0, "Gate", {"Off", "On"});
@@ -362,6 +366,7 @@ struct James : Module
 
 		configInput(IN_CLOCK_INPUT, "Clock");
 		configInput(IN_RESET_INPUT, "Reset");
+		configInput(IN_RANDOM_INPUT, "Random trigger");
 
 		configOutput(OUT_CLOCK_OUTPUT, "Clock");
 
@@ -446,6 +451,23 @@ struct James : Module
 		}
 	}
 
+	void generateGatesForGenre(int genreIdx)
+	{
+		if (genreIdx < 0 || genreIdx >= NUM_GENRES)
+			return;
+
+		float pattern[6][16];
+		generatePatternForGenre(GEN_RES[genreIdx], pattern);
+
+		for (int row = 0; row < NUM_ROWS; row++)
+		{
+			for (int col = 0; col < NUM_STEPS; col++)
+			{
+				params[getButtonId(row, col)].setValue(pattern[row][col] > 0.5f ? 1.f : 0.f);
+			}
+		}
+	}
+
 	dsp::Timer timer;
 	dsp::PulseGenerator clockOutPulse;
 	IgnoreClockAfterResetTimer ignoreClockAfterResetTimer;
@@ -458,6 +480,10 @@ struct James : Module
 	JamesClockTracker clockTracker;
 
 	bool gateTriggerModeEnabled = true;
+
+	int selectedGenre = -1;
+	float lastRandomParam = 0.f;
+	float lastRandomInput = 0.f;
 
 	bool shouldPulseThisClock(short row)
 	{
@@ -540,6 +566,22 @@ struct James : Module
 		{
 			reset();
 		}
+
+		// Handle Random button - generate a new variation of the selected genre
+		float randomParam = params[SWITCH_RANDOM_PARAM].getValue();
+		if (lastRandomParam == 0.f && randomParam != 0.f && selectedGenre >= 0)
+		{
+			generateGatesForGenre(selectedGenre);
+		}
+		lastRandomParam = randomParam;
+
+		// Handle Random CV trigger - detect rising edge on the random input
+		float randomInput = inputs[IN_RANDOM_INPUT].getVoltage();
+		if (lastRandomInput == 0.f && randomInput != 0.f && selectedGenre >= 0)
+		{
+			generateGatesForGenre(selectedGenre);
+		}
+		lastRandomInput = randomInput;
 
 		// set rush/drag values
 		for (int i = 0; i < NUM_ROWS; i++)
@@ -854,6 +896,9 @@ struct JamesWidget : ModuleWidget
 
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(164.679, 11.551)), module, James::LIGHT_GATE_MODE_CONTINUOUS_LIGHT));
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(164.679, 20.902)), module, James::LIGHT_GATE_MODE_TRIGGER_LIGHT));
+
+		addParam(createParamCentered<CKD6>(mm2px(Vec(178, 16.145)), module, James::SWITCH_RANDOM_PARAM));
+		addInput(createInputCentered<ThemedPJ301MPort>(mm2px(Vec(190, 16.145)), module, James::IN_RANDOM_INPUT));
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(26.987, 114.3)), module, James::LIGHT_STEP_INDICATOR_C0_LIGHT));
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(37.062, 114.3)), module, James::LIGHT_STEP_INDICATOR_C1_LIGHT));
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(47.137, 114.3)), module, James::LIGHT_STEP_INDICATOR_C2_LIGHT));
@@ -910,6 +955,30 @@ struct JamesWidget : ModuleWidget
 			randomizeGatesForRow->row = row;
 			randomizeGatesForRow->module = module;
 			menu->addChild(randomizeGatesForRow);
+		}
+
+		menu->addChild(new MenuEntry);
+		menu->addChild(new MenuSeparator());
+		menu->addChild(createMenuLabel("Generate by genre"));
+
+		struct GenerateGenre : MenuItem
+		{
+			int genreIdx;
+			James *module;
+			void onAction(const event::Action &e) override
+			{
+				module->selectedGenre = genreIdx;
+				module->generateGatesForGenre(genreIdx);
+			}
+		};
+
+		for (int i = 0; i < NUM_GENRES; i++)
+		{
+			GenerateGenre *generateGenre = createMenuItem<GenerateGenre>(GEN_RES[i].name);
+			generateGenre->genreIdx = i;
+			generateGenre->module = module;
+			generateGenre->rightText = CHECKMARK(module->selectedGenre == i);
+			menu->addChild(generateGenre);
 		}
 	}
 };
