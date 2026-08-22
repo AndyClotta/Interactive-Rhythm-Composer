@@ -54,7 +54,20 @@ Active steps also show a yellow indicator light behind the switch.
 
 GPL-3.0-or-later. See [LICENSE](LICENSE) for details.
 
-## Building
+## Download
+
+Descargá el plugin compilado desde [GitHub Releases](https://github.com/AndyClotta/Interactive-Rhythm-Composer/releases).
+
+### Instalación
+
+1. Descargá `FreezerLabs-2.4.1-win-x64.vcvplugin` del último release
+2. Copiá el archivo a la carpeta de plugins de VCV Rack:
+   - **Rack 2 Free**: `%LOCALAPPDATA%\Rack2\plugins-win-x64`
+   - **Rack 2 Pro**: `%LOCALAPPDATA%\Rack2\plugins-win-x64`
+3. Reiniciá VCV Rack
+4. El módulo aparece como **Freezer Labs → Interactive Rhythm Composer**
+
+## Building (para desarrolladores)
 
 ### Prerequisites
 
@@ -69,8 +82,6 @@ make install
 ```
 
 The built plugin will be in the `./dist` directory.
-
-Copy the contents of `./dist` to your VCV Rack plugins directory and launch Rack.
 
 ## Contributing
 
