@@ -71,8 +71,10 @@ Descargá el plugin compilado desde [GitHub Releases](https://github.com/AndyClo
 
 ### Prerequisites
 
-- VCV Rack SDK
-- MSYS2 (Windows) or build tools (Linux/Mac)
+- [VCV Rack SDK](https://vcvrack.com/manual/PluginDevelopmentTutorial) (2.x)
+- **Windows**: MSYS2 con `mingw-w64-x86_64-gcc` y `make`
+- **macOS**: Xcode Command Line Tools (`xcode-select --install`)
+- **Linux**: `build-essential` (GCC, make)
 
 ### Build
 
@@ -81,7 +83,17 @@ export RACK_DIR=/path/to/Rack-SDK
 make install
 ```
 
-The built plugin will be in the `./dist` directory.
+El plugin compilado estará en `./dist/FreezerLabs/`.
+
+### Instalación manual (todas las plataformas)
+
+Copiá la carpeta `dist/FreezerLabs/` a:
+
+| Plataforma | Ruta de plugins |
+|---|---|
+| **Windows** | `%LOCALAPPDATA%\Rack2\plugins-win-x64` |
+| **macOS** | `~/Library/Application Support/Rack2/plugins-mac-arm64` (Apple Silicon) o `plugins-mac-x64` (Intel) |
+| **Linux** | `~/.local/share/Rack2/plugins-lin-x64` |
 
 ## Contributing
 

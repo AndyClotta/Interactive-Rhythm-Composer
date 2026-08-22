@@ -1,5 +1,5 @@
 # If RACK_DIR is not defined when calling the Makefile, default to the SDK location
-RACK_DIR ?= C:/Dev/Rack-SDK
+RACK_DIR ?= /path/to/Rack-SDK
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS +=
