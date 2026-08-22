@@ -10,4 +10,4 @@ using namespace rack;
 extern Plugin *pluginInstance;
 
 // Declare each Model, defined in each module source file
-extern Model *modelInteractiveRhythmComposer;
+extern "C" Model *modelInteractiveRhythmComposer;

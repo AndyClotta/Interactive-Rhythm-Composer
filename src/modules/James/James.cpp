@@ -1470,4 +1470,4 @@ struct JamesWidget : ModuleWidget
 	}
 };
 
-Model *modelInteractiveRhythmComposer = createModel<James, JamesWidget>("InteractiveRhythmComposer");
+extern "C" Model *modelInteractiveRhythmComposer = createModel<James, JamesWidget>("InteractiveRhythmComposer");
