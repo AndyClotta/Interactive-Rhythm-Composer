@@ -19,12 +19,6 @@ Modified and maintained by [AndyClotta](https://github.com/AndyClotta).
 - Random pattern generation
 - Random CV input for external randomization
 
-## James
-
-6 row drum sequencer with per-row rush/drag controls.
-
-![James](https://i.imgur.com/CAWooFG.png)
-
 ## License
 
 GPL-3.0-or-later. See [LICENSE](LICENSE) for details.
