@@ -1,6 +1,6 @@
 #pragma once
 #include <rack.hpp>
-#include "DanielDavies.hpp"
+#include "plugin.hpp"
 
 struct RedKnob : rack::RoundKnob
 {
