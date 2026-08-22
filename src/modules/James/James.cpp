@@ -1,9 +1,82 @@
-#include "DanielDavies.hpp"
+#include "plugin.hpp"
 #include "JamesClockTracker.hpp"
 #include "JamesPatternGenerator.hpp"
 #include "widgets/Knobs.hpp"
 #include "widgets/Buttons.hpp"
 #include "utilities/IgnoreClockAfterResetTimer.hpp"
+
+// Custom gate switch with per-step probability.
+// - Left click: toggle on/off (as normal)
+// - Right click: open a menu to set the probability (0%, 25%, 50%, 75%, 100%)
+// - LED color: red = 100% (deterministic), orange = < 100% (probabilistic)
+struct ProbableGateSwitch : CKD6Latch
+{
+	float *probability = nullptr;
+
+	void onButton(const event::Button &e) override
+	{
+		if (e.button == GLFW_MOUSE_BUTTON_RIGHT && e.action == GLFW_PRESS)
+		{
+			// Open a context menu for probability selection
+			ui::Menu *menu = createMenu();
+			menu->addChild(createMenuLabel("Step probability"));
+
+			struct ProbItem : MenuItem
+			{
+				float value;
+				float *probability;
+				void onAction(const event::Action &e) override
+				{
+					*probability = value;
+				}
+			};
+
+			const float probs[] = {0.f, 0.25f, 0.5f, 0.75f, 1.f};
+			const char *labels[] = {"0%", "25%", "50%", "75%", "100%"};
+			for (int i = 0; i < 5; i++)
+			{
+				ProbItem *item = createMenuItem<ProbItem>(labels[i]);
+				item->value = probs[i];
+				item->probability = probability;
+				item->rightText = CHECKMARK(*probability == probs[i]);
+				menu->addChild(item);
+			}
+			e.consume(this);
+			return;
+		}
+		CKD6Latch::onButton(e);
+	}
+
+	void draw(const DrawArgs &args) override
+	{
+		CKD6Latch::draw(args);
+		// Override LED color based on probability:
+		// - 100%: red (default, leave as is)
+		// - 0%: no color (dark background)
+		// - 25%, 50%, 75%: full green
+		if (probability && *probability < 1.f)
+		{
+			const float cx = box.size.x / 2;
+			const float cy = box.size.y / 2;
+			const float r = 5.f; // larger radius to cover the underlying red LED
+
+			// Draw a dark background circle first to "turn off" the underlying LED
+			nvgBeginPath(args.vg);
+			nvgCircle(args.vg, cx, cy, r);
+			nvgFillColor(args.vg, nvgRGB(0x1a, 0x1a, 0x28));
+			nvgFill(args.vg);
+
+			if (*probability > 0.f)
+			{
+				// 25%, 50%, 75%: full green
+				nvgBeginPath(args.vg);
+				nvgCircle(args.vg, cx, cy, r - 1.f);
+				nvgFillColor(args.vg, nvgRGB(0x3f, 0xff, 0x3f));
+				nvgFill(args.vg);
+			}
+		}
+	}
+};
 
 struct James : Module
 {
@@ -484,6 +557,7 @@ struct James : Module
 	int selectedGenre = -1;
 	float lastRandomParam = 0.f;
 	float lastRandomInput = 0.f;
+	float gateProbabilities[96] = {};
 
 	bool shouldPulseThisClock(short row)
 	{
@@ -597,7 +671,13 @@ struct James : Module
 			{
 				if (shouldPulseThisClock(i))
 				{
-					gatePulseGenerators[i].trigger(1e-3f);
+					// Apply per-step probability
+					int step = clockTracker.getCurrentStep();
+					float prob = gateProbabilities[getButtonId(i, step)];
+					if (prob <= 0.f || random::uniform() < prob)
+					{
+						gatePulseGenerators[i].trigger(1e-3f);
+					}
 				}
 			}
 		}
@@ -662,15 +742,18 @@ struct JamesWidget : ModuleWidget
 		setModule(module);
 		setPanel(createPanel(asset::plugin(pluginInstance, "res/panels/light/James.svg"),asset::plugin(pluginInstance, "res/panels/dark/James.svg")));
 
+		if (!module)
+			return;
+
 		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(77.362, 16.145)), module, James::KNOB_STEP_COUNT_PARAM));
-		addParam(createParamCentered<RedKnob>(mm2px(Vec(117.661, 16.145)), module, James::KNOB_CLOCK_SPEED_PARAM));
+		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(71.012, 16.145)), module, James::KNOB_STEP_COUNT_PARAM));
+		addParam(createParamCentered<RedKnob>(mm2px(Vec(111.311, 16.145)), module, James::KNOB_CLOCK_SPEED_PARAM));
 
-		addParam(createParamCentered<CKD6InvisibleLatch>(mm2px(Vec(157.961, 16.145)), module, James::SWITCH_GATE_MODE_PARAM));
+		addParam(createParamCentered<CKD6InvisibleLatch>(mm2px(Vec(151.611, 16.145)), module, James::SWITCH_GATE_MODE_PARAM));
 
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 33.874)), module, James::KNOB_RUSH_R0_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 48.056)), module, James::KNOB_RUSH_R1_PARAM));
@@ -679,22 +762,86 @@ struct JamesWidget : ModuleWidget
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 90.601)), module, James::KNOB_RUSH_R4_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 104.783)), module, James::KNOB_RUSH_R5_PARAM));
 
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(26.987, 33.867)), module, James::SWITCH_GATE_R0_C0_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(37.062, 33.867)), module, James::SWITCH_GATE_R0_C1_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(47.137, 33.867)), module, James::SWITCH_GATE_R0_C2_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(57.212, 33.867)), module, James::SWITCH_GATE_R0_C3_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(67.287, 33.867)), module, James::SWITCH_GATE_R0_C4_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(77.362, 33.867)), module, James::SWITCH_GATE_R0_C5_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(87.437, 33.867)), module, James::SWITCH_GATE_R0_C6_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(97.511, 33.867)), module, James::SWITCH_GATE_R0_C7_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(107.586, 33.867)), module, James::SWITCH_GATE_R0_C8_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(117.661, 33.867)), module, James::SWITCH_GATE_R0_C9_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(127.736, 33.867)), module, James::SWITCH_GATE_R0_C10_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(137.811, 33.867)), module, James::SWITCH_GATE_R0_C11_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(147.886, 33.867)), module, James::SWITCH_GATE_R0_C12_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(157.961, 33.867)), module, James::SWITCH_GATE_R0_C13_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(168.035, 33.867)), module, James::SWITCH_GATE_R0_C14_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(178.11, 33.867)), module, James::SWITCH_GATE_R0_C15_PARAM));
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 33.867)), module, James::SWITCH_GATE_R0_C0_PARAM);
+			sw->probability = &module->gateProbabilities[0];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(37.062, 33.867)), module, James::SWITCH_GATE_R0_C1_PARAM);
+			sw->probability = &module->gateProbabilities[1];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(47.137, 33.867)), module, James::SWITCH_GATE_R0_C2_PARAM);
+			sw->probability = &module->gateProbabilities[2];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(57.212, 33.867)), module, James::SWITCH_GATE_R0_C3_PARAM);
+			sw->probability = &module->gateProbabilities[3];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(67.287, 33.867)), module, James::SWITCH_GATE_R0_C4_PARAM);
+			sw->probability = &module->gateProbabilities[4];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(77.362, 33.867)), module, James::SWITCH_GATE_R0_C5_PARAM);
+			sw->probability = &module->gateProbabilities[5];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(87.437, 33.867)), module, James::SWITCH_GATE_R0_C6_PARAM);
+			sw->probability = &module->gateProbabilities[6];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(97.511, 33.867)), module, James::SWITCH_GATE_R0_C7_PARAM);
+			sw->probability = &module->gateProbabilities[7];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(107.586, 33.867)), module, James::SWITCH_GATE_R0_C8_PARAM);
+			sw->probability = &module->gateProbabilities[8];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(117.661, 33.867)), module, James::SWITCH_GATE_R0_C9_PARAM);
+			sw->probability = &module->gateProbabilities[9];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(127.736, 33.867)), module, James::SWITCH_GATE_R0_C10_PARAM);
+			sw->probability = &module->gateProbabilities[10];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(137.811, 33.867)), module, James::SWITCH_GATE_R0_C11_PARAM);
+			sw->probability = &module->gateProbabilities[11];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(147.886, 33.867)), module, James::SWITCH_GATE_R0_C12_PARAM);
+			sw->probability = &module->gateProbabilities[12];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(157.961, 33.867)), module, James::SWITCH_GATE_R0_C13_PARAM);
+			sw->probability = &module->gateProbabilities[13];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(168.035, 33.867)), module, James::SWITCH_GATE_R0_C14_PARAM);
+			sw->probability = &module->gateProbabilities[14];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(178.11, 33.867)), module, James::SWITCH_GATE_R0_C15_PARAM);
+			sw->probability = &module->gateProbabilities[15];
+			addParam(sw);
+		}
 
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(26.987, 33.867)), module, James::GATE_LIGHT_R0_C0_LIGHT));
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(37.062, 33.867)), module, James::GATE_LIGHT_R0_C1_LIGHT));
@@ -713,22 +860,86 @@ struct JamesWidget : ModuleWidget
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(168.035, 33.867)), module, James::GATE_LIGHT_R0_C14_LIGHT));
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(178.11, 33.867)), module, James::GATE_LIGHT_R0_C15_LIGHT));
 
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(26.987, 48.056)), module, James::SWITCH_GATE_R1_C0_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(37.062, 48.056)), module, James::SWITCH_GATE_R1_C1_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(47.137, 48.056)), module, James::SWITCH_GATE_R1_C2_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(57.212, 48.056)), module, James::SWITCH_GATE_R1_C3_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(67.287, 48.056)), module, James::SWITCH_GATE_R1_C4_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(77.362, 48.056)), module, James::SWITCH_GATE_R1_C5_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(87.437, 48.056)), module, James::SWITCH_GATE_R1_C6_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(97.511, 48.056)), module, James::SWITCH_GATE_R1_C7_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(107.586, 48.056)), module, James::SWITCH_GATE_R1_C8_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(117.661, 48.056)), module, James::SWITCH_GATE_R1_C9_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(127.736, 48.056)), module, James::SWITCH_GATE_R1_C10_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(137.811, 48.056)), module, James::SWITCH_GATE_R1_C11_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(147.886, 48.056)), module, James::SWITCH_GATE_R1_C12_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(157.961, 48.056)), module, James::SWITCH_GATE_R1_C13_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(168.035, 48.056)), module, James::SWITCH_GATE_R1_C14_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(178.11, 48.056)), module, James::SWITCH_GATE_R1_C15_PARAM));
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 48.056)), module, James::SWITCH_GATE_R1_C0_PARAM);
+			sw->probability = &module->gateProbabilities[16];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(37.062, 48.056)), module, James::SWITCH_GATE_R1_C1_PARAM);
+			sw->probability = &module->gateProbabilities[17];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(47.137, 48.056)), module, James::SWITCH_GATE_R1_C2_PARAM);
+			sw->probability = &module->gateProbabilities[18];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(57.212, 48.056)), module, James::SWITCH_GATE_R1_C3_PARAM);
+			sw->probability = &module->gateProbabilities[19];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(67.287, 48.056)), module, James::SWITCH_GATE_R1_C4_PARAM);
+			sw->probability = &module->gateProbabilities[20];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(77.362, 48.056)), module, James::SWITCH_GATE_R1_C5_PARAM);
+			sw->probability = &module->gateProbabilities[21];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(87.437, 48.056)), module, James::SWITCH_GATE_R1_C6_PARAM);
+			sw->probability = &module->gateProbabilities[22];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(97.511, 48.056)), module, James::SWITCH_GATE_R1_C7_PARAM);
+			sw->probability = &module->gateProbabilities[23];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(107.586, 48.056)), module, James::SWITCH_GATE_R1_C8_PARAM);
+			sw->probability = &module->gateProbabilities[24];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(117.661, 48.056)), module, James::SWITCH_GATE_R1_C9_PARAM);
+			sw->probability = &module->gateProbabilities[25];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(127.736, 48.056)), module, James::SWITCH_GATE_R1_C10_PARAM);
+			sw->probability = &module->gateProbabilities[26];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(137.811, 48.056)), module, James::SWITCH_GATE_R1_C11_PARAM);
+			sw->probability = &module->gateProbabilities[27];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(147.886, 48.056)), module, James::SWITCH_GATE_R1_C12_PARAM);
+			sw->probability = &module->gateProbabilities[28];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(157.961, 48.056)), module, James::SWITCH_GATE_R1_C13_PARAM);
+			sw->probability = &module->gateProbabilities[29];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(168.035, 48.056)), module, James::SWITCH_GATE_R1_C14_PARAM);
+			sw->probability = &module->gateProbabilities[30];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(178.11, 48.056)), module, James::SWITCH_GATE_R1_C15_PARAM);
+			sw->probability = &module->gateProbabilities[31];
+			addParam(sw);
+		}
 
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(26.987, 48.056)), module, James::GATE_LIGHT_R1_C0_LIGHT));
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(37.062, 48.056)), module, James::GATE_LIGHT_R1_C1_LIGHT));
@@ -747,22 +958,86 @@ struct JamesWidget : ModuleWidget
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(168.035, 48.056)), module, James::GATE_LIGHT_R1_C14_LIGHT));
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(178.11, 48.056)), module, James::GATE_LIGHT_R1_C15_LIGHT));
 
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(26.987, 62.238)), module, James::SWITCH_GATE_R2_C0_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(37.062, 62.238)), module, James::SWITCH_GATE_R2_C1_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(47.137, 62.238)), module, James::SWITCH_GATE_R2_C2_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(57.212, 62.238)), module, James::SWITCH_GATE_R2_C3_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(67.287, 62.238)), module, James::SWITCH_GATE_R2_C4_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(77.362, 62.238)), module, James::SWITCH_GATE_R2_C5_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(87.437, 62.238)), module, James::SWITCH_GATE_R2_C6_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(97.511, 62.238)), module, James::SWITCH_GATE_R2_C7_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(107.586, 62.238)), module, James::SWITCH_GATE_R2_C8_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(117.661, 62.238)), module, James::SWITCH_GATE_R2_C9_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(127.736, 62.238)), module, James::SWITCH_GATE_R2_C10_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(137.811, 62.238)), module, James::SWITCH_GATE_R2_C11_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(147.886, 62.238)), module, James::SWITCH_GATE_R2_C12_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(157.961, 62.238)), module, James::SWITCH_GATE_R2_C13_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(168.035, 62.238)), module, James::SWITCH_GATE_R2_C14_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(178.11, 62.238)), module, James::SWITCH_GATE_R2_C15_PARAM));
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 62.238)), module, James::SWITCH_GATE_R2_C0_PARAM);
+			sw->probability = &module->gateProbabilities[32];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(37.062, 62.238)), module, James::SWITCH_GATE_R2_C1_PARAM);
+			sw->probability = &module->gateProbabilities[33];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(47.137, 62.238)), module, James::SWITCH_GATE_R2_C2_PARAM);
+			sw->probability = &module->gateProbabilities[34];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(57.212, 62.238)), module, James::SWITCH_GATE_R2_C3_PARAM);
+			sw->probability = &module->gateProbabilities[35];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(67.287, 62.238)), module, James::SWITCH_GATE_R2_C4_PARAM);
+			sw->probability = &module->gateProbabilities[36];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(77.362, 62.238)), module, James::SWITCH_GATE_R2_C5_PARAM);
+			sw->probability = &module->gateProbabilities[37];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(87.437, 62.238)), module, James::SWITCH_GATE_R2_C6_PARAM);
+			sw->probability = &module->gateProbabilities[38];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(97.511, 62.238)), module, James::SWITCH_GATE_R2_C7_PARAM);
+			sw->probability = &module->gateProbabilities[39];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(107.586, 62.238)), module, James::SWITCH_GATE_R2_C8_PARAM);
+			sw->probability = &module->gateProbabilities[40];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(117.661, 62.238)), module, James::SWITCH_GATE_R2_C9_PARAM);
+			sw->probability = &module->gateProbabilities[41];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(127.736, 62.238)), module, James::SWITCH_GATE_R2_C10_PARAM);
+			sw->probability = &module->gateProbabilities[42];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(137.811, 62.238)), module, James::SWITCH_GATE_R2_C11_PARAM);
+			sw->probability = &module->gateProbabilities[43];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(147.886, 62.238)), module, James::SWITCH_GATE_R2_C12_PARAM);
+			sw->probability = &module->gateProbabilities[44];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(157.961, 62.238)), module, James::SWITCH_GATE_R2_C13_PARAM);
+			sw->probability = &module->gateProbabilities[45];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(168.035, 62.238)), module, James::SWITCH_GATE_R2_C14_PARAM);
+			sw->probability = &module->gateProbabilities[46];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(178.11, 62.238)), module, James::SWITCH_GATE_R2_C15_PARAM);
+			sw->probability = &module->gateProbabilities[47];
+			addParam(sw);
+		}
 
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(26.987, 62.238)), module, James::GATE_LIGHT_R2_C0_LIGHT));
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(37.062, 62.238)), module, James::GATE_LIGHT_R2_C1_LIGHT));
@@ -781,22 +1056,86 @@ struct JamesWidget : ModuleWidget
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(168.035, 62.238)), module, James::GATE_LIGHT_R2_C14_LIGHT));
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(178.11, 62.238)), module, James::GATE_LIGHT_R2_C15_LIGHT));
 
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(26.987, 76.419)), module, James::SWITCH_GATE_R3_C0_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(37.062, 76.419)), module, James::SWITCH_GATE_R3_C1_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(47.137, 76.419)), module, James::SWITCH_GATE_R3_C2_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(57.212, 76.419)), module, James::SWITCH_GATE_R3_C3_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(67.287, 76.419)), module, James::SWITCH_GATE_R3_C4_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(77.362, 76.419)), module, James::SWITCH_GATE_R3_C5_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(87.437, 76.419)), module, James::SWITCH_GATE_R3_C6_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(97.511, 76.419)), module, James::SWITCH_GATE_R3_C7_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(107.586, 76.419)), module, James::SWITCH_GATE_R3_C8_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(117.661, 76.419)), module, James::SWITCH_GATE_R3_C9_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(127.736, 76.419)), module, James::SWITCH_GATE_R3_C10_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(137.811, 76.419)), module, James::SWITCH_GATE_R3_C11_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(147.886, 76.419)), module, James::SWITCH_GATE_R3_C12_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(157.961, 76.419)), module, James::SWITCH_GATE_R3_C13_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(168.035, 76.419)), module, James::SWITCH_GATE_R3_C14_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(178.11, 76.419)), module, James::SWITCH_GATE_R3_C15_PARAM));
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 76.419)), module, James::SWITCH_GATE_R3_C0_PARAM);
+			sw->probability = &module->gateProbabilities[48];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(37.062, 76.419)), module, James::SWITCH_GATE_R3_C1_PARAM);
+			sw->probability = &module->gateProbabilities[49];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(47.137, 76.419)), module, James::SWITCH_GATE_R3_C2_PARAM);
+			sw->probability = &module->gateProbabilities[50];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(57.212, 76.419)), module, James::SWITCH_GATE_R3_C3_PARAM);
+			sw->probability = &module->gateProbabilities[51];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(67.287, 76.419)), module, James::SWITCH_GATE_R3_C4_PARAM);
+			sw->probability = &module->gateProbabilities[52];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(77.362, 76.419)), module, James::SWITCH_GATE_R3_C5_PARAM);
+			sw->probability = &module->gateProbabilities[53];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(87.437, 76.419)), module, James::SWITCH_GATE_R3_C6_PARAM);
+			sw->probability = &module->gateProbabilities[54];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(97.511, 76.419)), module, James::SWITCH_GATE_R3_C7_PARAM);
+			sw->probability = &module->gateProbabilities[55];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(107.586, 76.419)), module, James::SWITCH_GATE_R3_C8_PARAM);
+			sw->probability = &module->gateProbabilities[56];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(117.661, 76.419)), module, James::SWITCH_GATE_R3_C9_PARAM);
+			sw->probability = &module->gateProbabilities[57];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(127.736, 76.419)), module, James::SWITCH_GATE_R3_C10_PARAM);
+			sw->probability = &module->gateProbabilities[58];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(137.811, 76.419)), module, James::SWITCH_GATE_R3_C11_PARAM);
+			sw->probability = &module->gateProbabilities[59];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(147.886, 76.419)), module, James::SWITCH_GATE_R3_C12_PARAM);
+			sw->probability = &module->gateProbabilities[60];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(157.961, 76.419)), module, James::SWITCH_GATE_R3_C13_PARAM);
+			sw->probability = &module->gateProbabilities[61];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(168.035, 76.419)), module, James::SWITCH_GATE_R3_C14_PARAM);
+			sw->probability = &module->gateProbabilities[62];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(178.11, 76.419)), module, James::SWITCH_GATE_R3_C15_PARAM);
+			sw->probability = &module->gateProbabilities[63];
+			addParam(sw);
+		}
 
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(26.987, 76.419)), module, James::GATE_LIGHT_R3_C0_LIGHT));
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(37.062, 76.419)), module, James::GATE_LIGHT_R3_C1_LIGHT));
@@ -815,22 +1154,86 @@ struct JamesWidget : ModuleWidget
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(168.035, 76.419)), module, James::GATE_LIGHT_R3_C14_LIGHT));
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(178.11, 76.419)), module, James::GATE_LIGHT_R3_C15_LIGHT));
 
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(26.987, 90.601)), module, James::SWITCH_GATE_R4_C0_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(37.062, 90.601)), module, James::SWITCH_GATE_R4_C1_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(46.873, 90.601)), module, James::SWITCH_GATE_R4_C2_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(57.212, 90.601)), module, James::SWITCH_GATE_R4_C3_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(67.287, 90.601)), module, James::SWITCH_GATE_R4_C4_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(77.362, 90.601)), module, James::SWITCH_GATE_R4_C5_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(87.437, 90.601)), module, James::SWITCH_GATE_R4_C6_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(97.511, 90.601)), module, James::SWITCH_GATE_R4_C7_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(107.586, 90.601)), module, James::SWITCH_GATE_R4_C8_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(117.661, 90.601)), module, James::SWITCH_GATE_R4_C9_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(127.736, 90.601)), module, James::SWITCH_GATE_R4_C10_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(137.811, 90.601)), module, James::SWITCH_GATE_R4_C11_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(147.886, 90.601)), module, James::SWITCH_GATE_R4_C12_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(157.961, 90.601)), module, James::SWITCH_GATE_R4_C13_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(168.035, 90.601)), module, James::SWITCH_GATE_R4_C14_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(178.11, 90.601)), module, James::SWITCH_GATE_R4_C15_PARAM));
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 90.601)), module, James::SWITCH_GATE_R4_C0_PARAM);
+			sw->probability = &module->gateProbabilities[64];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(37.062, 90.601)), module, James::SWITCH_GATE_R4_C1_PARAM);
+			sw->probability = &module->gateProbabilities[65];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(46.873, 90.601)), module, James::SWITCH_GATE_R4_C2_PARAM);
+			sw->probability = &module->gateProbabilities[66];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(57.212, 90.601)), module, James::SWITCH_GATE_R4_C3_PARAM);
+			sw->probability = &module->gateProbabilities[67];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(67.287, 90.601)), module, James::SWITCH_GATE_R4_C4_PARAM);
+			sw->probability = &module->gateProbabilities[68];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(77.362, 90.601)), module, James::SWITCH_GATE_R4_C5_PARAM);
+			sw->probability = &module->gateProbabilities[69];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(87.437, 90.601)), module, James::SWITCH_GATE_R4_C6_PARAM);
+			sw->probability = &module->gateProbabilities[70];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(97.511, 90.601)), module, James::SWITCH_GATE_R4_C7_PARAM);
+			sw->probability = &module->gateProbabilities[71];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(107.586, 90.601)), module, James::SWITCH_GATE_R4_C8_PARAM);
+			sw->probability = &module->gateProbabilities[72];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(117.661, 90.601)), module, James::SWITCH_GATE_R4_C9_PARAM);
+			sw->probability = &module->gateProbabilities[73];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(127.736, 90.601)), module, James::SWITCH_GATE_R4_C10_PARAM);
+			sw->probability = &module->gateProbabilities[74];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(137.811, 90.601)), module, James::SWITCH_GATE_R4_C11_PARAM);
+			sw->probability = &module->gateProbabilities[75];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(147.886, 90.601)), module, James::SWITCH_GATE_R4_C12_PARAM);
+			sw->probability = &module->gateProbabilities[76];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(157.961, 90.601)), module, James::SWITCH_GATE_R4_C13_PARAM);
+			sw->probability = &module->gateProbabilities[77];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(168.035, 90.601)), module, James::SWITCH_GATE_R4_C14_PARAM);
+			sw->probability = &module->gateProbabilities[78];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(178.11, 90.601)), module, James::SWITCH_GATE_R4_C15_PARAM);
+			sw->probability = &module->gateProbabilities[79];
+			addParam(sw);
+		}
 
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(26.987, 90.601)), module, James::GATE_LIGHT_R4_C0_LIGHT));
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(37.062, 90.601)), module, James::GATE_LIGHT_R4_C1_LIGHT));
@@ -849,22 +1252,86 @@ struct JamesWidget : ModuleWidget
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(168.035, 90.601)), module, James::GATE_LIGHT_R4_C14_LIGHT));
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(178.11, 90.601)), module, James::GATE_LIGHT_R4_C15_LIGHT));
 
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(26.987, 104.783)), module, James::SWITCH_GATE_R5_C0_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(37.062, 104.783)), module, James::SWITCH_GATE_R5_C1_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(47.137, 104.783)), module, James::SWITCH_GATE_R5_C2_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(57.212, 104.783)), module, James::SWITCH_GATE_R5_C3_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(67.287, 104.783)), module, James::SWITCH_GATE_R5_C4_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(77.362, 104.783)), module, James::SWITCH_GATE_R5_C5_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(87.437, 104.783)), module, James::SWITCH_GATE_R5_C6_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(97.511, 104.783)), module, James::SWITCH_GATE_R5_C7_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(107.586, 104.783)), module, James::SWITCH_GATE_R5_C8_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(117.661, 104.783)), module, James::SWITCH_GATE_R5_C9_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(127.736, 104.783)), module, James::SWITCH_GATE_R5_C10_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(137.811, 104.783)), module, James::SWITCH_GATE_R5_C11_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(147.886, 104.783)), module, James::SWITCH_GATE_R5_C12_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(157.961, 104.783)), module, James::SWITCH_GATE_R5_C13_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(168.035, 104.783)), module, James::SWITCH_GATE_R5_C14_PARAM));
-		addParam(createParamCentered<CKD6Latch>(mm2px(Vec(178.11, 104.783)), module, James::SWITCH_GATE_R5_C15_PARAM));
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 104.783)), module, James::SWITCH_GATE_R5_C0_PARAM);
+			sw->probability = &module->gateProbabilities[80];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(37.062, 104.783)), module, James::SWITCH_GATE_R5_C1_PARAM);
+			sw->probability = &module->gateProbabilities[81];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(47.137, 104.783)), module, James::SWITCH_GATE_R5_C2_PARAM);
+			sw->probability = &module->gateProbabilities[82];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(57.212, 104.783)), module, James::SWITCH_GATE_R5_C3_PARAM);
+			sw->probability = &module->gateProbabilities[83];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(67.287, 104.783)), module, James::SWITCH_GATE_R5_C4_PARAM);
+			sw->probability = &module->gateProbabilities[84];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(77.362, 104.783)), module, James::SWITCH_GATE_R5_C5_PARAM);
+			sw->probability = &module->gateProbabilities[85];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(87.437, 104.783)), module, James::SWITCH_GATE_R5_C6_PARAM);
+			sw->probability = &module->gateProbabilities[86];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(97.511, 104.783)), module, James::SWITCH_GATE_R5_C7_PARAM);
+			sw->probability = &module->gateProbabilities[87];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(107.586, 104.783)), module, James::SWITCH_GATE_R5_C8_PARAM);
+			sw->probability = &module->gateProbabilities[88];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(117.661, 104.783)), module, James::SWITCH_GATE_R5_C9_PARAM);
+			sw->probability = &module->gateProbabilities[89];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(127.736, 104.783)), module, James::SWITCH_GATE_R5_C10_PARAM);
+			sw->probability = &module->gateProbabilities[90];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(137.811, 104.783)), module, James::SWITCH_GATE_R5_C11_PARAM);
+			sw->probability = &module->gateProbabilities[91];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(147.886, 104.783)), module, James::SWITCH_GATE_R5_C12_PARAM);
+			sw->probability = &module->gateProbabilities[92];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(157.961, 104.783)), module, James::SWITCH_GATE_R5_C13_PARAM);
+			sw->probability = &module->gateProbabilities[93];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(168.035, 104.783)), module, James::SWITCH_GATE_R5_C14_PARAM);
+			sw->probability = &module->gateProbabilities[94];
+			addParam(sw);
+		}
+		{
+			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(178.11, 104.783)), module, James::SWITCH_GATE_R5_C15_PARAM);
+			sw->probability = &module->gateProbabilities[95];
+			addParam(sw);
+		}
 
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(26.987, 104.783)), module, James::GATE_LIGHT_R5_C0_LIGHT));
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(37.062, 104.783)), module, James::GATE_LIGHT_R5_C1_LIGHT));
@@ -883,10 +1350,10 @@ struct JamesWidget : ModuleWidget
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(168.035, 104.783)), module, James::GATE_LIGHT_R5_C14_LIGHT));
 		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(178.11, 104.783)), module, James::GATE_LIGHT_R5_C15_LIGHT));
 
-		addInput(createInputCentered<ThemedPJ301MPort>(mm2px(Vec(57.212, 16.145)), module, James::IN_CLOCK_INPUT));
-		addInput(createInputCentered<ThemedPJ301MPort>(mm2px(Vec(137.811, 16.145)), module, James::IN_RESET_INPUT));
+		addInput(createInputCentered<ThemedPJ301MPort>(mm2px(Vec(50.862, 16.145)), module, James::IN_CLOCK_INPUT));
+		addInput(createInputCentered<ThemedPJ301MPort>(mm2px(Vec(131.461, 16.145)), module, James::IN_RESET_INPUT));
 
-		addOutput(createOutputCentered<ThemedPJ301MPort>(mm2px(Vec(97.511, 16.145)), module, James::OUT_CLOCK_OUTPUT));
+		addOutput(createOutputCentered<ThemedPJ301MPort>(mm2px(Vec(91.161, 16.145)), module, James::OUT_CLOCK_OUTPUT));
 		addOutput(createOutputCentered<ThemedPJ301MPort>(mm2px(Vec(201.628, 33.874)), module, James::OUT_GATE_R0_OUTPUT));
 		addOutput(createOutputCentered<ThemedPJ301MPort>(mm2px(Vec(201.628, 48.056)), module, James::OUT_GATE_R1_OUTPUT));
 		addOutput(createOutputCentered<ThemedPJ301MPort>(mm2px(Vec(201.628, 62.238)), module, James::OUT_GATE_R2_OUTPUT));
@@ -894,11 +1361,11 @@ struct JamesWidget : ModuleWidget
 		addOutput(createOutputCentered<ThemedPJ301MPort>(mm2px(Vec(201.628, 90.601)), module, James::OUT_GATE_R4_OUTPUT));
 		addOutput(createOutputCentered<ThemedPJ301MPort>(mm2px(Vec(201.628, 104.783)), module, James::OUT_GATE_R5_OUTPUT));
 
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(164.679, 11.551)), module, James::LIGHT_GATE_MODE_CONTINUOUS_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(164.679, 20.902)), module, James::LIGHT_GATE_MODE_TRIGGER_LIGHT));
+		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(158.329, 11.551)), module, James::LIGHT_GATE_MODE_CONTINUOUS_LIGHT));
+		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(158.329, 20.902)), module, James::LIGHT_GATE_MODE_TRIGGER_LIGHT));
 
-		addParam(createParamCentered<CKD6>(mm2px(Vec(178, 16.145)), module, James::SWITCH_RANDOM_PARAM));
-		addInput(createInputCentered<ThemedPJ301MPort>(mm2px(Vec(190, 16.145)), module, James::IN_RANDOM_INPUT));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(177.988, 16.145)), module, James::SWITCH_RANDOM_PARAM));
+		addInput(createInputCentered<ThemedPJ301MPort>(mm2px(Vec(192.555, 16.145)), module, James::IN_RANDOM_INPUT));
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(26.987, 114.3)), module, James::LIGHT_STEP_INDICATOR_C0_LIGHT));
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(37.062, 114.3)), module, James::LIGHT_STEP_INDICATOR_C1_LIGHT));
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(47.137, 114.3)), module, James::LIGHT_STEP_INDICATOR_C2_LIGHT));
@@ -980,7 +1447,25 @@ struct JamesWidget : ModuleWidget
 			generateGenre->rightText = CHECKMARK(module->selectedGenre == i);
 			menu->addChild(generateGenre);
 		}
+
+		menu->addChild(new MenuSeparator());
+
+		struct ClearProbabilities : MenuItem
+		{
+			James *module;
+			void onAction(const event::Action &e) override
+			{
+				for (int i = 0; i < 96; i++)
+				{
+					module->gateProbabilities[i] = 1.f;
+				}
+			}
+		};
+
+		ClearProbabilities *clearProbabilities = createMenuItem<ClearProbabilities>("Clear all probabilities");
+		clearProbabilities->module = module;
+		menu->addChild(clearProbabilities);
 	}
 };
 
-Model *modelJames = createModel<James, JamesWidget>("James");
+Model *modelInteractiveRhythmComposer = createModel<James, JamesWidget>("InteractiveRhythmComposer");

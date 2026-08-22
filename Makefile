@@ -1,5 +1,5 @@
-# If RACK_DIR is not defined when calling the Makefile, default to two directories above
-RACK_DIR ?= ../..
+# If RACK_DIR is not defined when calling the Makefile, default to the SDK location
+RACK_DIR ?= C:/Dev/Rack-SDK
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS +=
@@ -23,13 +23,13 @@ DISTRIBUTABLES += $(wildcard LICENSE*)
 include $(RACK_DIR)/plugin.mk
 
 run:
-	"/C/Program Files/VCV/Rack2Free/Rack.exe" -d -u "/C/Users/danie/Documents/Rack2" -s "/C/Program Files/VCV/Rack2Free" 2>&1 | cat
+	"/C/Program Files/VCV/Rack2Free/Rack.exe" -d -u "/C/Users/djand/AppData/Local/Rack2" -s "/C/Program Files/VCV/Rack2Free" 2>&1 | cat
 
 copy:
-	cp "C:\C++\Rack-SDK-2.6.4-win\Rack-SDK\DanielDaviesVCV\dist\SequelSequencers" "C:\Users\danie\Documents\Rack2\plugins" -r
+	cp "C:\Dev\DanielDaviesVCV\dist\FreezerLabs" "C:\Users\djand\AppData\Local\Rack2\plugins" -r
 
 copy-pro:
-	cp "C:\C++\Rack-SDK-2.6.4-win\Rack-SDK\DanielDaviesVCV\dist\SequelSequencers" "C:\Users\danie\Documents\Rack2\plugins-win-x64" -r
+	cp "C:\Dev\DanielDaviesVCV\dist\FreezerLabs" "C:\Users\djand\AppData\Local\Rack2\plugins-win-x64" -r
 
 build-and-run:
 	make install && make copy && make run
