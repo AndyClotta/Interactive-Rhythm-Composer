@@ -66,13 +66,14 @@ struct ProbableGateSwitch : CKD6Latch
 			nvgFillColor(args.vg, nvgRGB(0x1a, 0x1a, 0x28));
 			nvgFill(args.vg);
 
-			if (*probability > 0.f)
+		if (*probability > 0.f)
 			{
-				// 25%, 50%, 75%: full green
+				// 25%, 50%, 75%: thick red ring around the yellow indicator
 				nvgBeginPath(args.vg);
 				nvgCircle(args.vg, cx, cy, r - 1.f);
-				nvgFillColor(args.vg, nvgRGB(0x3f, 0xff, 0x3f));
-				nvgFill(args.vg);
+				nvgStrokeWidth(args.vg, 2.0f);
+				nvgStrokeColor(args.vg, nvgRGB(0xff, 0x00, 0x00));
+				nvgStroke(args.vg);
 			}
 		}
 	}
@@ -645,6 +646,8 @@ struct James : Module
 		float randomParam = params[SWITCH_RANDOM_PARAM].getValue();
 		if (lastRandomParam == 0.f && randomParam != 0.f && selectedGenre >= 0)
 		{
+			for (int i = 0; i < 96; i++)
+				gateProbabilities[i] = 1.f;
 			generateGatesForGenre(selectedGenre);
 		}
 		lastRandomParam = randomParam;
@@ -653,6 +656,8 @@ struct James : Module
 		float randomInput = inputs[IN_RANDOM_INPUT].getVoltage();
 		if (lastRandomInput == 0.f && randomInput != 0.f && selectedGenre >= 0)
 		{
+			for (int i = 0; i < 96; i++)
+				gateProbabilities[i] = 1.f;
 			generateGatesForGenre(selectedGenre);
 		}
 		lastRandomInput = randomInput;
@@ -742,9 +747,6 @@ struct JamesWidget : ModuleWidget
 		setModule(module);
 		setPanel(createPanel(asset::plugin(pluginInstance, "res/panels/light/James.svg"),asset::plugin(pluginInstance, "res/panels/dark/James.svg")));
 
-		if (!module)
-			return;
-
 		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
@@ -764,591 +766,591 @@ struct JamesWidget : ModuleWidget
 
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 33.867)), module, James::SWITCH_GATE_R0_C0_PARAM);
-			sw->probability = &module->gateProbabilities[0];
+			if (module) sw->probability = &module->gateProbabilities[0];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(37.062, 33.867)), module, James::SWITCH_GATE_R0_C1_PARAM);
-			sw->probability = &module->gateProbabilities[1];
+			if (module) sw->probability = &module->gateProbabilities[1];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(47.137, 33.867)), module, James::SWITCH_GATE_R0_C2_PARAM);
-			sw->probability = &module->gateProbabilities[2];
+			if (module) sw->probability = &module->gateProbabilities[2];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(57.212, 33.867)), module, James::SWITCH_GATE_R0_C3_PARAM);
-			sw->probability = &module->gateProbabilities[3];
+			if (module) sw->probability = &module->gateProbabilities[3];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(67.287, 33.867)), module, James::SWITCH_GATE_R0_C4_PARAM);
-			sw->probability = &module->gateProbabilities[4];
+			if (module) sw->probability = &module->gateProbabilities[4];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(77.362, 33.867)), module, James::SWITCH_GATE_R0_C5_PARAM);
-			sw->probability = &module->gateProbabilities[5];
+			if (module) sw->probability = &module->gateProbabilities[5];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(87.437, 33.867)), module, James::SWITCH_GATE_R0_C6_PARAM);
-			sw->probability = &module->gateProbabilities[6];
+			if (module) sw->probability = &module->gateProbabilities[6];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(97.511, 33.867)), module, James::SWITCH_GATE_R0_C7_PARAM);
-			sw->probability = &module->gateProbabilities[7];
+			if (module) sw->probability = &module->gateProbabilities[7];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(107.586, 33.867)), module, James::SWITCH_GATE_R0_C8_PARAM);
-			sw->probability = &module->gateProbabilities[8];
+			if (module) sw->probability = &module->gateProbabilities[8];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(117.661, 33.867)), module, James::SWITCH_GATE_R0_C9_PARAM);
-			sw->probability = &module->gateProbabilities[9];
+			if (module) sw->probability = &module->gateProbabilities[9];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(127.736, 33.867)), module, James::SWITCH_GATE_R0_C10_PARAM);
-			sw->probability = &module->gateProbabilities[10];
+			if (module) sw->probability = &module->gateProbabilities[10];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(137.811, 33.867)), module, James::SWITCH_GATE_R0_C11_PARAM);
-			sw->probability = &module->gateProbabilities[11];
+			if (module) sw->probability = &module->gateProbabilities[11];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(147.886, 33.867)), module, James::SWITCH_GATE_R0_C12_PARAM);
-			sw->probability = &module->gateProbabilities[12];
+			if (module) sw->probability = &module->gateProbabilities[12];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(157.961, 33.867)), module, James::SWITCH_GATE_R0_C13_PARAM);
-			sw->probability = &module->gateProbabilities[13];
+			if (module) sw->probability = &module->gateProbabilities[13];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(168.035, 33.867)), module, James::SWITCH_GATE_R0_C14_PARAM);
-			sw->probability = &module->gateProbabilities[14];
+			if (module) sw->probability = &module->gateProbabilities[14];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(178.11, 33.867)), module, James::SWITCH_GATE_R0_C15_PARAM);
-			sw->probability = &module->gateProbabilities[15];
+			if (module) sw->probability = &module->gateProbabilities[15];
 			addParam(sw);
 		}
 
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(26.987, 33.867)), module, James::GATE_LIGHT_R0_C0_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(37.062, 33.867)), module, James::GATE_LIGHT_R0_C1_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(47.137, 33.867)), module, James::GATE_LIGHT_R0_C2_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(57.212, 33.867)), module, James::GATE_LIGHT_R0_C3_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(67.287, 33.867)), module, James::GATE_LIGHT_R0_C4_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(77.362, 33.867)), module, James::GATE_LIGHT_R0_C5_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(87.437, 33.867)), module, James::GATE_LIGHT_R0_C6_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(97.511, 33.867)), module, James::GATE_LIGHT_R0_C7_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(107.586, 33.867)), module, James::GATE_LIGHT_R0_C8_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(117.661, 33.867)), module, James::GATE_LIGHT_R0_C9_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(127.736, 33.867)), module, James::GATE_LIGHT_R0_C10_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(137.811, 33.867)), module, James::GATE_LIGHT_R0_C11_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(147.886, 33.867)), module, James::GATE_LIGHT_R0_C12_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(157.961, 33.867)), module, James::GATE_LIGHT_R0_C13_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(168.035, 33.867)), module, James::GATE_LIGHT_R0_C14_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(178.11, 33.867)), module, James::GATE_LIGHT_R0_C15_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(26.987, 33.867)), module, James::GATE_LIGHT_R0_C0_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(37.062, 33.867)), module, James::GATE_LIGHT_R0_C1_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(47.137, 33.867)), module, James::GATE_LIGHT_R0_C2_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(57.212, 33.867)), module, James::GATE_LIGHT_R0_C3_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(67.287, 33.867)), module, James::GATE_LIGHT_R0_C4_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(77.362, 33.867)), module, James::GATE_LIGHT_R0_C5_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(87.437, 33.867)), module, James::GATE_LIGHT_R0_C6_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(97.511, 33.867)), module, James::GATE_LIGHT_R0_C7_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(107.586, 33.867)), module, James::GATE_LIGHT_R0_C8_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(117.661, 33.867)), module, James::GATE_LIGHT_R0_C9_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(127.736, 33.867)), module, James::GATE_LIGHT_R0_C10_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(137.811, 33.867)), module, James::GATE_LIGHT_R0_C11_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(147.886, 33.867)), module, James::GATE_LIGHT_R0_C12_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(157.961, 33.867)), module, James::GATE_LIGHT_R0_C13_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(168.035, 33.867)), module, James::GATE_LIGHT_R0_C14_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(178.11, 33.867)), module, James::GATE_LIGHT_R0_C15_LIGHT));
 
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 48.056)), module, James::SWITCH_GATE_R1_C0_PARAM);
-			sw->probability = &module->gateProbabilities[16];
+			if (module) sw->probability = &module->gateProbabilities[16];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(37.062, 48.056)), module, James::SWITCH_GATE_R1_C1_PARAM);
-			sw->probability = &module->gateProbabilities[17];
+			if (module) sw->probability = &module->gateProbabilities[17];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(47.137, 48.056)), module, James::SWITCH_GATE_R1_C2_PARAM);
-			sw->probability = &module->gateProbabilities[18];
+			if (module) sw->probability = &module->gateProbabilities[18];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(57.212, 48.056)), module, James::SWITCH_GATE_R1_C3_PARAM);
-			sw->probability = &module->gateProbabilities[19];
+			if (module) sw->probability = &module->gateProbabilities[19];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(67.287, 48.056)), module, James::SWITCH_GATE_R1_C4_PARAM);
-			sw->probability = &module->gateProbabilities[20];
+			if (module) sw->probability = &module->gateProbabilities[20];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(77.362, 48.056)), module, James::SWITCH_GATE_R1_C5_PARAM);
-			sw->probability = &module->gateProbabilities[21];
+			if (module) sw->probability = &module->gateProbabilities[21];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(87.437, 48.056)), module, James::SWITCH_GATE_R1_C6_PARAM);
-			sw->probability = &module->gateProbabilities[22];
+			if (module) sw->probability = &module->gateProbabilities[22];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(97.511, 48.056)), module, James::SWITCH_GATE_R1_C7_PARAM);
-			sw->probability = &module->gateProbabilities[23];
+			if (module) sw->probability = &module->gateProbabilities[23];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(107.586, 48.056)), module, James::SWITCH_GATE_R1_C8_PARAM);
-			sw->probability = &module->gateProbabilities[24];
+			if (module) sw->probability = &module->gateProbabilities[24];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(117.661, 48.056)), module, James::SWITCH_GATE_R1_C9_PARAM);
-			sw->probability = &module->gateProbabilities[25];
+			if (module) sw->probability = &module->gateProbabilities[25];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(127.736, 48.056)), module, James::SWITCH_GATE_R1_C10_PARAM);
-			sw->probability = &module->gateProbabilities[26];
+			if (module) sw->probability = &module->gateProbabilities[26];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(137.811, 48.056)), module, James::SWITCH_GATE_R1_C11_PARAM);
-			sw->probability = &module->gateProbabilities[27];
+			if (module) sw->probability = &module->gateProbabilities[27];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(147.886, 48.056)), module, James::SWITCH_GATE_R1_C12_PARAM);
-			sw->probability = &module->gateProbabilities[28];
+			if (module) sw->probability = &module->gateProbabilities[28];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(157.961, 48.056)), module, James::SWITCH_GATE_R1_C13_PARAM);
-			sw->probability = &module->gateProbabilities[29];
+			if (module) sw->probability = &module->gateProbabilities[29];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(168.035, 48.056)), module, James::SWITCH_GATE_R1_C14_PARAM);
-			sw->probability = &module->gateProbabilities[30];
+			if (module) sw->probability = &module->gateProbabilities[30];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(178.11, 48.056)), module, James::SWITCH_GATE_R1_C15_PARAM);
-			sw->probability = &module->gateProbabilities[31];
+			if (module) sw->probability = &module->gateProbabilities[31];
 			addParam(sw);
 		}
 
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(26.987, 48.056)), module, James::GATE_LIGHT_R1_C0_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(37.062, 48.056)), module, James::GATE_LIGHT_R1_C1_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(47.137, 48.056)), module, James::GATE_LIGHT_R1_C2_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(57.212, 48.056)), module, James::GATE_LIGHT_R1_C3_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(67.287, 48.056)), module, James::GATE_LIGHT_R1_C4_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(77.362, 48.056)), module, James::GATE_LIGHT_R1_C5_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(87.437, 48.056)), module, James::GATE_LIGHT_R1_C6_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(97.511, 48.056)), module, James::GATE_LIGHT_R1_C7_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(107.586, 48.056)), module, James::GATE_LIGHT_R1_C8_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(117.661, 48.056)), module, James::GATE_LIGHT_R1_C9_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(127.736, 48.056)), module, James::GATE_LIGHT_R1_C10_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(137.811, 48.056)), module, James::GATE_LIGHT_R1_C11_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(147.886, 48.056)), module, James::GATE_LIGHT_R1_C12_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(157.961, 48.056)), module, James::GATE_LIGHT_R1_C13_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(168.035, 48.056)), module, James::GATE_LIGHT_R1_C14_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(178.11, 48.056)), module, James::GATE_LIGHT_R1_C15_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(26.987, 48.056)), module, James::GATE_LIGHT_R1_C0_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(37.062, 48.056)), module, James::GATE_LIGHT_R1_C1_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(47.137, 48.056)), module, James::GATE_LIGHT_R1_C2_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(57.212, 48.056)), module, James::GATE_LIGHT_R1_C3_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(67.287, 48.056)), module, James::GATE_LIGHT_R1_C4_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(77.362, 48.056)), module, James::GATE_LIGHT_R1_C5_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(87.437, 48.056)), module, James::GATE_LIGHT_R1_C6_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(97.511, 48.056)), module, James::GATE_LIGHT_R1_C7_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(107.586, 48.056)), module, James::GATE_LIGHT_R1_C8_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(117.661, 48.056)), module, James::GATE_LIGHT_R1_C9_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(127.736, 48.056)), module, James::GATE_LIGHT_R1_C10_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(137.811, 48.056)), module, James::GATE_LIGHT_R1_C11_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(147.886, 48.056)), module, James::GATE_LIGHT_R1_C12_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(157.961, 48.056)), module, James::GATE_LIGHT_R1_C13_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(168.035, 48.056)), module, James::GATE_LIGHT_R1_C14_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(178.11, 48.056)), module, James::GATE_LIGHT_R1_C15_LIGHT));
 
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 62.238)), module, James::SWITCH_GATE_R2_C0_PARAM);
-			sw->probability = &module->gateProbabilities[32];
+			if (module) sw->probability = &module->gateProbabilities[32];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(37.062, 62.238)), module, James::SWITCH_GATE_R2_C1_PARAM);
-			sw->probability = &module->gateProbabilities[33];
+			if (module) sw->probability = &module->gateProbabilities[33];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(47.137, 62.238)), module, James::SWITCH_GATE_R2_C2_PARAM);
-			sw->probability = &module->gateProbabilities[34];
+			if (module) sw->probability = &module->gateProbabilities[34];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(57.212, 62.238)), module, James::SWITCH_GATE_R2_C3_PARAM);
-			sw->probability = &module->gateProbabilities[35];
+			if (module) sw->probability = &module->gateProbabilities[35];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(67.287, 62.238)), module, James::SWITCH_GATE_R2_C4_PARAM);
-			sw->probability = &module->gateProbabilities[36];
+			if (module) sw->probability = &module->gateProbabilities[36];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(77.362, 62.238)), module, James::SWITCH_GATE_R2_C5_PARAM);
-			sw->probability = &module->gateProbabilities[37];
+			if (module) sw->probability = &module->gateProbabilities[37];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(87.437, 62.238)), module, James::SWITCH_GATE_R2_C6_PARAM);
-			sw->probability = &module->gateProbabilities[38];
+			if (module) sw->probability = &module->gateProbabilities[38];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(97.511, 62.238)), module, James::SWITCH_GATE_R2_C7_PARAM);
-			sw->probability = &module->gateProbabilities[39];
+			if (module) sw->probability = &module->gateProbabilities[39];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(107.586, 62.238)), module, James::SWITCH_GATE_R2_C8_PARAM);
-			sw->probability = &module->gateProbabilities[40];
+			if (module) sw->probability = &module->gateProbabilities[40];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(117.661, 62.238)), module, James::SWITCH_GATE_R2_C9_PARAM);
-			sw->probability = &module->gateProbabilities[41];
+			if (module) sw->probability = &module->gateProbabilities[41];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(127.736, 62.238)), module, James::SWITCH_GATE_R2_C10_PARAM);
-			sw->probability = &module->gateProbabilities[42];
+			if (module) sw->probability = &module->gateProbabilities[42];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(137.811, 62.238)), module, James::SWITCH_GATE_R2_C11_PARAM);
-			sw->probability = &module->gateProbabilities[43];
+			if (module) sw->probability = &module->gateProbabilities[43];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(147.886, 62.238)), module, James::SWITCH_GATE_R2_C12_PARAM);
-			sw->probability = &module->gateProbabilities[44];
+			if (module) sw->probability = &module->gateProbabilities[44];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(157.961, 62.238)), module, James::SWITCH_GATE_R2_C13_PARAM);
-			sw->probability = &module->gateProbabilities[45];
+			if (module) sw->probability = &module->gateProbabilities[45];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(168.035, 62.238)), module, James::SWITCH_GATE_R2_C14_PARAM);
-			sw->probability = &module->gateProbabilities[46];
+			if (module) sw->probability = &module->gateProbabilities[46];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(178.11, 62.238)), module, James::SWITCH_GATE_R2_C15_PARAM);
-			sw->probability = &module->gateProbabilities[47];
+			if (module) sw->probability = &module->gateProbabilities[47];
 			addParam(sw);
 		}
 
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(26.987, 62.238)), module, James::GATE_LIGHT_R2_C0_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(37.062, 62.238)), module, James::GATE_LIGHT_R2_C1_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(47.137, 62.238)), module, James::GATE_LIGHT_R2_C2_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(57.212, 62.238)), module, James::GATE_LIGHT_R2_C3_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(67.287, 62.238)), module, James::GATE_LIGHT_R2_C4_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(77.362, 62.238)), module, James::GATE_LIGHT_R2_C5_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(87.437, 62.238)), module, James::GATE_LIGHT_R2_C6_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(97.511, 62.238)), module, James::GATE_LIGHT_R2_C7_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(107.586, 62.238)), module, James::GATE_LIGHT_R2_C8_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(117.661, 62.238)), module, James::GATE_LIGHT_R2_C9_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(127.736, 62.238)), module, James::GATE_LIGHT_R2_C10_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(137.811, 62.238)), module, James::GATE_LIGHT_R2_C11_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(147.886, 62.238)), module, James::GATE_LIGHT_R2_C12_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(157.961, 62.238)), module, James::GATE_LIGHT_R2_C13_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(168.035, 62.238)), module, James::GATE_LIGHT_R2_C14_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(178.11, 62.238)), module, James::GATE_LIGHT_R2_C15_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(26.987, 62.238)), module, James::GATE_LIGHT_R2_C0_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(37.062, 62.238)), module, James::GATE_LIGHT_R2_C1_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(47.137, 62.238)), module, James::GATE_LIGHT_R2_C2_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(57.212, 62.238)), module, James::GATE_LIGHT_R2_C3_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(67.287, 62.238)), module, James::GATE_LIGHT_R2_C4_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(77.362, 62.238)), module, James::GATE_LIGHT_R2_C5_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(87.437, 62.238)), module, James::GATE_LIGHT_R2_C6_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(97.511, 62.238)), module, James::GATE_LIGHT_R2_C7_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(107.586, 62.238)), module, James::GATE_LIGHT_R2_C8_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(117.661, 62.238)), module, James::GATE_LIGHT_R2_C9_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(127.736, 62.238)), module, James::GATE_LIGHT_R2_C10_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(137.811, 62.238)), module, James::GATE_LIGHT_R2_C11_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(147.886, 62.238)), module, James::GATE_LIGHT_R2_C12_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(157.961, 62.238)), module, James::GATE_LIGHT_R2_C13_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(168.035, 62.238)), module, James::GATE_LIGHT_R2_C14_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(178.11, 62.238)), module, James::GATE_LIGHT_R2_C15_LIGHT));
 
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 76.419)), module, James::SWITCH_GATE_R3_C0_PARAM);
-			sw->probability = &module->gateProbabilities[48];
+			if (module) sw->probability = &module->gateProbabilities[48];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(37.062, 76.419)), module, James::SWITCH_GATE_R3_C1_PARAM);
-			sw->probability = &module->gateProbabilities[49];
+			if (module) sw->probability = &module->gateProbabilities[49];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(47.137, 76.419)), module, James::SWITCH_GATE_R3_C2_PARAM);
-			sw->probability = &module->gateProbabilities[50];
+			if (module) sw->probability = &module->gateProbabilities[50];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(57.212, 76.419)), module, James::SWITCH_GATE_R3_C3_PARAM);
-			sw->probability = &module->gateProbabilities[51];
+			if (module) sw->probability = &module->gateProbabilities[51];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(67.287, 76.419)), module, James::SWITCH_GATE_R3_C4_PARAM);
-			sw->probability = &module->gateProbabilities[52];
+			if (module) sw->probability = &module->gateProbabilities[52];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(77.362, 76.419)), module, James::SWITCH_GATE_R3_C5_PARAM);
-			sw->probability = &module->gateProbabilities[53];
+			if (module) sw->probability = &module->gateProbabilities[53];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(87.437, 76.419)), module, James::SWITCH_GATE_R3_C6_PARAM);
-			sw->probability = &module->gateProbabilities[54];
+			if (module) sw->probability = &module->gateProbabilities[54];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(97.511, 76.419)), module, James::SWITCH_GATE_R3_C7_PARAM);
-			sw->probability = &module->gateProbabilities[55];
+			if (module) sw->probability = &module->gateProbabilities[55];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(107.586, 76.419)), module, James::SWITCH_GATE_R3_C8_PARAM);
-			sw->probability = &module->gateProbabilities[56];
+			if (module) sw->probability = &module->gateProbabilities[56];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(117.661, 76.419)), module, James::SWITCH_GATE_R3_C9_PARAM);
-			sw->probability = &module->gateProbabilities[57];
+			if (module) sw->probability = &module->gateProbabilities[57];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(127.736, 76.419)), module, James::SWITCH_GATE_R3_C10_PARAM);
-			sw->probability = &module->gateProbabilities[58];
+			if (module) sw->probability = &module->gateProbabilities[58];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(137.811, 76.419)), module, James::SWITCH_GATE_R3_C11_PARAM);
-			sw->probability = &module->gateProbabilities[59];
+			if (module) sw->probability = &module->gateProbabilities[59];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(147.886, 76.419)), module, James::SWITCH_GATE_R3_C12_PARAM);
-			sw->probability = &module->gateProbabilities[60];
+			if (module) sw->probability = &module->gateProbabilities[60];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(157.961, 76.419)), module, James::SWITCH_GATE_R3_C13_PARAM);
-			sw->probability = &module->gateProbabilities[61];
+			if (module) sw->probability = &module->gateProbabilities[61];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(168.035, 76.419)), module, James::SWITCH_GATE_R3_C14_PARAM);
-			sw->probability = &module->gateProbabilities[62];
+			if (module) sw->probability = &module->gateProbabilities[62];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(178.11, 76.419)), module, James::SWITCH_GATE_R3_C15_PARAM);
-			sw->probability = &module->gateProbabilities[63];
+			if (module) sw->probability = &module->gateProbabilities[63];
 			addParam(sw);
 		}
 
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(26.987, 76.419)), module, James::GATE_LIGHT_R3_C0_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(37.062, 76.419)), module, James::GATE_LIGHT_R3_C1_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(47.137, 76.419)), module, James::GATE_LIGHT_R3_C2_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(57.212, 76.419)), module, James::GATE_LIGHT_R3_C3_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(67.287, 76.419)), module, James::GATE_LIGHT_R3_C4_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(77.362, 76.419)), module, James::GATE_LIGHT_R3_C5_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(87.437, 76.419)), module, James::GATE_LIGHT_R3_C6_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(97.511, 76.419)), module, James::GATE_LIGHT_R3_C7_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(107.586, 76.419)), module, James::GATE_LIGHT_R3_C8_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(117.661, 76.419)), module, James::GATE_LIGHT_R3_C9_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(127.736, 76.419)), module, James::GATE_LIGHT_R3_C10_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(137.811, 76.419)), module, James::GATE_LIGHT_R3_C11_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(147.886, 76.419)), module, James::GATE_LIGHT_R3_C12_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(157.961, 76.419)), module, James::GATE_LIGHT_R3_C13_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(168.035, 76.419)), module, James::GATE_LIGHT_R3_C14_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(178.11, 76.419)), module, James::GATE_LIGHT_R3_C15_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(26.987, 76.419)), module, James::GATE_LIGHT_R3_C0_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(37.062, 76.419)), module, James::GATE_LIGHT_R3_C1_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(47.137, 76.419)), module, James::GATE_LIGHT_R3_C2_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(57.212, 76.419)), module, James::GATE_LIGHT_R3_C3_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(67.287, 76.419)), module, James::GATE_LIGHT_R3_C4_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(77.362, 76.419)), module, James::GATE_LIGHT_R3_C5_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(87.437, 76.419)), module, James::GATE_LIGHT_R3_C6_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(97.511, 76.419)), module, James::GATE_LIGHT_R3_C7_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(107.586, 76.419)), module, James::GATE_LIGHT_R3_C8_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(117.661, 76.419)), module, James::GATE_LIGHT_R3_C9_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(127.736, 76.419)), module, James::GATE_LIGHT_R3_C10_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(137.811, 76.419)), module, James::GATE_LIGHT_R3_C11_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(147.886, 76.419)), module, James::GATE_LIGHT_R3_C12_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(157.961, 76.419)), module, James::GATE_LIGHT_R3_C13_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(168.035, 76.419)), module, James::GATE_LIGHT_R3_C14_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(178.11, 76.419)), module, James::GATE_LIGHT_R3_C15_LIGHT));
 
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 90.601)), module, James::SWITCH_GATE_R4_C0_PARAM);
-			sw->probability = &module->gateProbabilities[64];
+			if (module) sw->probability = &module->gateProbabilities[64];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(37.062, 90.601)), module, James::SWITCH_GATE_R4_C1_PARAM);
-			sw->probability = &module->gateProbabilities[65];
+			if (module) sw->probability = &module->gateProbabilities[65];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(46.873, 90.601)), module, James::SWITCH_GATE_R4_C2_PARAM);
-			sw->probability = &module->gateProbabilities[66];
+			if (module) sw->probability = &module->gateProbabilities[66];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(57.212, 90.601)), module, James::SWITCH_GATE_R4_C3_PARAM);
-			sw->probability = &module->gateProbabilities[67];
+			if (module) sw->probability = &module->gateProbabilities[67];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(67.287, 90.601)), module, James::SWITCH_GATE_R4_C4_PARAM);
-			sw->probability = &module->gateProbabilities[68];
+			if (module) sw->probability = &module->gateProbabilities[68];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(77.362, 90.601)), module, James::SWITCH_GATE_R4_C5_PARAM);
-			sw->probability = &module->gateProbabilities[69];
+			if (module) sw->probability = &module->gateProbabilities[69];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(87.437, 90.601)), module, James::SWITCH_GATE_R4_C6_PARAM);
-			sw->probability = &module->gateProbabilities[70];
+			if (module) sw->probability = &module->gateProbabilities[70];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(97.511, 90.601)), module, James::SWITCH_GATE_R4_C7_PARAM);
-			sw->probability = &module->gateProbabilities[71];
+			if (module) sw->probability = &module->gateProbabilities[71];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(107.586, 90.601)), module, James::SWITCH_GATE_R4_C8_PARAM);
-			sw->probability = &module->gateProbabilities[72];
+			if (module) sw->probability = &module->gateProbabilities[72];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(117.661, 90.601)), module, James::SWITCH_GATE_R4_C9_PARAM);
-			sw->probability = &module->gateProbabilities[73];
+			if (module) sw->probability = &module->gateProbabilities[73];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(127.736, 90.601)), module, James::SWITCH_GATE_R4_C10_PARAM);
-			sw->probability = &module->gateProbabilities[74];
+			if (module) sw->probability = &module->gateProbabilities[74];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(137.811, 90.601)), module, James::SWITCH_GATE_R4_C11_PARAM);
-			sw->probability = &module->gateProbabilities[75];
+			if (module) sw->probability = &module->gateProbabilities[75];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(147.886, 90.601)), module, James::SWITCH_GATE_R4_C12_PARAM);
-			sw->probability = &module->gateProbabilities[76];
+			if (module) sw->probability = &module->gateProbabilities[76];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(157.961, 90.601)), module, James::SWITCH_GATE_R4_C13_PARAM);
-			sw->probability = &module->gateProbabilities[77];
+			if (module) sw->probability = &module->gateProbabilities[77];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(168.035, 90.601)), module, James::SWITCH_GATE_R4_C14_PARAM);
-			sw->probability = &module->gateProbabilities[78];
+			if (module) sw->probability = &module->gateProbabilities[78];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(178.11, 90.601)), module, James::SWITCH_GATE_R4_C15_PARAM);
-			sw->probability = &module->gateProbabilities[79];
+			if (module) sw->probability = &module->gateProbabilities[79];
 			addParam(sw);
 		}
 
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(26.987, 90.601)), module, James::GATE_LIGHT_R4_C0_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(37.062, 90.601)), module, James::GATE_LIGHT_R4_C1_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(46.873, 90.601)), module, James::GATE_LIGHT_R4_C2_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(57.212, 90.601)), module, James::GATE_LIGHT_R4_C3_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(67.287, 90.601)), module, James::GATE_LIGHT_R4_C4_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(77.362, 90.601)), module, James::GATE_LIGHT_R4_C5_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(87.437, 90.601)), module, James::GATE_LIGHT_R4_C6_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(97.511, 90.601)), module, James::GATE_LIGHT_R4_C7_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(107.586, 90.601)), module, James::GATE_LIGHT_R4_C8_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(117.661, 90.601)), module, James::GATE_LIGHT_R4_C9_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(127.736, 90.601)), module, James::GATE_LIGHT_R4_C10_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(137.811, 90.601)), module, James::GATE_LIGHT_R4_C11_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(147.886, 90.601)), module, James::GATE_LIGHT_R4_C12_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(157.961, 90.601)), module, James::GATE_LIGHT_R4_C13_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(168.035, 90.601)), module, James::GATE_LIGHT_R4_C14_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(178.11, 90.601)), module, James::GATE_LIGHT_R4_C15_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(26.987, 90.601)), module, James::GATE_LIGHT_R4_C0_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(37.062, 90.601)), module, James::GATE_LIGHT_R4_C1_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(46.873, 90.601)), module, James::GATE_LIGHT_R4_C2_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(57.212, 90.601)), module, James::GATE_LIGHT_R4_C3_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(67.287, 90.601)), module, James::GATE_LIGHT_R4_C4_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(77.362, 90.601)), module, James::GATE_LIGHT_R4_C5_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(87.437, 90.601)), module, James::GATE_LIGHT_R4_C6_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(97.511, 90.601)), module, James::GATE_LIGHT_R4_C7_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(107.586, 90.601)), module, James::GATE_LIGHT_R4_C8_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(117.661, 90.601)), module, James::GATE_LIGHT_R4_C9_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(127.736, 90.601)), module, James::GATE_LIGHT_R4_C10_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(137.811, 90.601)), module, James::GATE_LIGHT_R4_C11_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(147.886, 90.601)), module, James::GATE_LIGHT_R4_C12_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(157.961, 90.601)), module, James::GATE_LIGHT_R4_C13_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(168.035, 90.601)), module, James::GATE_LIGHT_R4_C14_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(178.11, 90.601)), module, James::GATE_LIGHT_R4_C15_LIGHT));
 
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 104.783)), module, James::SWITCH_GATE_R5_C0_PARAM);
-			sw->probability = &module->gateProbabilities[80];
+			if (module) sw->probability = &module->gateProbabilities[80];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(37.062, 104.783)), module, James::SWITCH_GATE_R5_C1_PARAM);
-			sw->probability = &module->gateProbabilities[81];
+			if (module) sw->probability = &module->gateProbabilities[81];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(47.137, 104.783)), module, James::SWITCH_GATE_R5_C2_PARAM);
-			sw->probability = &module->gateProbabilities[82];
+			if (module) sw->probability = &module->gateProbabilities[82];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(57.212, 104.783)), module, James::SWITCH_GATE_R5_C3_PARAM);
-			sw->probability = &module->gateProbabilities[83];
+			if (module) sw->probability = &module->gateProbabilities[83];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(67.287, 104.783)), module, James::SWITCH_GATE_R5_C4_PARAM);
-			sw->probability = &module->gateProbabilities[84];
+			if (module) sw->probability = &module->gateProbabilities[84];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(77.362, 104.783)), module, James::SWITCH_GATE_R5_C5_PARAM);
-			sw->probability = &module->gateProbabilities[85];
+			if (module) sw->probability = &module->gateProbabilities[85];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(87.437, 104.783)), module, James::SWITCH_GATE_R5_C6_PARAM);
-			sw->probability = &module->gateProbabilities[86];
+			if (module) sw->probability = &module->gateProbabilities[86];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(97.511, 104.783)), module, James::SWITCH_GATE_R5_C7_PARAM);
-			sw->probability = &module->gateProbabilities[87];
+			if (module) sw->probability = &module->gateProbabilities[87];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(107.586, 104.783)), module, James::SWITCH_GATE_R5_C8_PARAM);
-			sw->probability = &module->gateProbabilities[88];
+			if (module) sw->probability = &module->gateProbabilities[88];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(117.661, 104.783)), module, James::SWITCH_GATE_R5_C9_PARAM);
-			sw->probability = &module->gateProbabilities[89];
+			if (module) sw->probability = &module->gateProbabilities[89];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(127.736, 104.783)), module, James::SWITCH_GATE_R5_C10_PARAM);
-			sw->probability = &module->gateProbabilities[90];
+			if (module) sw->probability = &module->gateProbabilities[90];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(137.811, 104.783)), module, James::SWITCH_GATE_R5_C11_PARAM);
-			sw->probability = &module->gateProbabilities[91];
+			if (module) sw->probability = &module->gateProbabilities[91];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(147.886, 104.783)), module, James::SWITCH_GATE_R5_C12_PARAM);
-			sw->probability = &module->gateProbabilities[92];
+			if (module) sw->probability = &module->gateProbabilities[92];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(157.961, 104.783)), module, James::SWITCH_GATE_R5_C13_PARAM);
-			sw->probability = &module->gateProbabilities[93];
+			if (module) sw->probability = &module->gateProbabilities[93];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(168.035, 104.783)), module, James::SWITCH_GATE_R5_C14_PARAM);
-			sw->probability = &module->gateProbabilities[94];
+			if (module) sw->probability = &module->gateProbabilities[94];
 			addParam(sw);
 		}
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(178.11, 104.783)), module, James::SWITCH_GATE_R5_C15_PARAM);
-			sw->probability = &module->gateProbabilities[95];
+			if (module) sw->probability = &module->gateProbabilities[95];
 			addParam(sw);
 		}
 
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(26.987, 104.783)), module, James::GATE_LIGHT_R5_C0_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(37.062, 104.783)), module, James::GATE_LIGHT_R5_C1_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(47.137, 104.783)), module, James::GATE_LIGHT_R5_C2_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(57.212, 104.783)), module, James::GATE_LIGHT_R5_C3_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(67.287, 104.783)), module, James::GATE_LIGHT_R5_C4_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(77.362, 104.783)), module, James::GATE_LIGHT_R5_C5_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(87.437, 104.783)), module, James::GATE_LIGHT_R5_C6_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(97.511, 104.783)), module, James::GATE_LIGHT_R5_C7_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(107.586, 104.783)), module, James::GATE_LIGHT_R5_C8_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(117.661, 104.783)), module, James::GATE_LIGHT_R5_C9_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(127.736, 104.783)), module, James::GATE_LIGHT_R5_C10_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(137.811, 104.783)), module, James::GATE_LIGHT_R5_C11_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(147.886, 104.783)), module, James::GATE_LIGHT_R5_C12_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(157.961, 104.783)), module, James::GATE_LIGHT_R5_C13_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(168.035, 104.783)), module, James::GATE_LIGHT_R5_C14_LIGHT));
-		addChild(createLightCentered<SmallSimpleLight<RedLight>>(mm2px(Vec(178.11, 104.783)), module, James::GATE_LIGHT_R5_C15_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(26.987, 104.783)), module, James::GATE_LIGHT_R5_C0_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(37.062, 104.783)), module, James::GATE_LIGHT_R5_C1_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(47.137, 104.783)), module, James::GATE_LIGHT_R5_C2_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(57.212, 104.783)), module, James::GATE_LIGHT_R5_C3_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(67.287, 104.783)), module, James::GATE_LIGHT_R5_C4_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(77.362, 104.783)), module, James::GATE_LIGHT_R5_C5_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(87.437, 104.783)), module, James::GATE_LIGHT_R5_C6_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(97.511, 104.783)), module, James::GATE_LIGHT_R5_C7_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(107.586, 104.783)), module, James::GATE_LIGHT_R5_C8_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(117.661, 104.783)), module, James::GATE_LIGHT_R5_C9_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(127.736, 104.783)), module, James::GATE_LIGHT_R5_C10_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(137.811, 104.783)), module, James::GATE_LIGHT_R5_C11_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(147.886, 104.783)), module, James::GATE_LIGHT_R5_C12_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(157.961, 104.783)), module, James::GATE_LIGHT_R5_C13_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(168.035, 104.783)), module, James::GATE_LIGHT_R5_C14_LIGHT));
+		addChild(createLightCentered<SmallSimpleLight<YellowLight>>(mm2px(Vec(178.11, 104.783)), module, James::GATE_LIGHT_R5_C15_LIGHT));
 
 		addInput(createInputCentered<ThemedPJ301MPort>(mm2px(Vec(50.862, 16.145)), module, James::IN_CLOCK_INPUT));
 		addInput(createInputCentered<ThemedPJ301MPort>(mm2px(Vec(131.461, 16.145)), module, James::IN_RESET_INPUT));
@@ -1366,22 +1368,22 @@ struct JamesWidget : ModuleWidget
 
 		addParam(createParamCentered<CKD6>(mm2px(Vec(177.988, 16.145)), module, James::SWITCH_RANDOM_PARAM));
 		addInput(createInputCentered<ThemedPJ301MPort>(mm2px(Vec(192.555, 16.145)), module, James::IN_RANDOM_INPUT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(26.987, 114.3)), module, James::LIGHT_STEP_INDICATOR_C0_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(37.062, 114.3)), module, James::LIGHT_STEP_INDICATOR_C1_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(47.137, 114.3)), module, James::LIGHT_STEP_INDICATOR_C2_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(57.212, 114.3)), module, James::LIGHT_STEP_INDICATOR_C3_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.287, 114.3)), module, James::LIGHT_STEP_INDICATOR_C4_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(77.362, 114.3)), module, James::LIGHT_STEP_INDICATOR_C5_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(87.437, 114.3)), module, James::LIGHT_STEP_INDICATOR_C6_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(97.511, 114.3)), module, James::LIGHT_STEP_INDICATOR_C7_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(107.586, 114.3)), module, James::LIGHT_STEP_INDICATOR_C8_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(117.661, 114.3)), module, James::LIGHT_STEP_INDICATOR_C9_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(127.736, 114.3)), module, James::LIGHT_STEP_INDICATOR_C10_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(137.811, 114.3)), module, James::LIGHT_STEP_INDICATOR_C11_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(147.886, 114.3)), module, James::LIGHT_STEP_INDICATOR_C12_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(157.961, 114.3)), module, James::LIGHT_STEP_INDICATOR_C13_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(168.035, 114.3)), module, James::LIGHT_STEP_INDICATOR_C14_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(178.11, 114.3)), module, James::LIGHT_STEP_INDICATOR_C15_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(26.987, 114.3)), module, James::LIGHT_STEP_INDICATOR_C0_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(37.062, 114.3)), module, James::LIGHT_STEP_INDICATOR_C1_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(47.137, 114.3)), module, James::LIGHT_STEP_INDICATOR_C2_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(57.212, 114.3)), module, James::LIGHT_STEP_INDICATOR_C3_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(67.287, 114.3)), module, James::LIGHT_STEP_INDICATOR_C4_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(77.362, 114.3)), module, James::LIGHT_STEP_INDICATOR_C5_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(87.437, 114.3)), module, James::LIGHT_STEP_INDICATOR_C6_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(97.511, 114.3)), module, James::LIGHT_STEP_INDICATOR_C7_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(107.586, 114.3)), module, James::LIGHT_STEP_INDICATOR_C8_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(117.661, 114.3)), module, James::LIGHT_STEP_INDICATOR_C9_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(127.736, 114.3)), module, James::LIGHT_STEP_INDICATOR_C10_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(137.811, 114.3)), module, James::LIGHT_STEP_INDICATOR_C11_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(147.886, 114.3)), module, James::LIGHT_STEP_INDICATOR_C12_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(157.961, 114.3)), module, James::LIGHT_STEP_INDICATOR_C13_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(168.035, 114.3)), module, James::LIGHT_STEP_INDICATOR_C14_LIGHT));
+		addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(178.11, 114.3)), module, James::LIGHT_STEP_INDICATOR_C15_LIGHT));
 	}
 
 	void appendContextMenu(Menu *menu) override

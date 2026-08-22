@@ -21,6 +21,35 @@ Modified and maintained by [AndyClotta](https://github.com/AndyClotta).
 - Random pattern generation
 - Random CV input for external randomization
 
+## Usage
+
+### Right-click menu (module panel)
+
+Right-click anywhere on the module panel to open the context menu:
+
+| Action | Description |
+|--------|-------------|
+| **Randomize all gates** | Randomizes all 96 gate switches (6 rows × 16 steps) |
+| **Randomize Gates for row 1–6** | Randomizes a single row independently |
+| **Generate by genre** | Generates a pattern based on one of 11 genres: House, Techno, Trap, Drum & Bass, Minimal, Afro, Electro, Ambient, Glitch, Braindance, Markovian |
+| **Clear all probabilities** | Resets all per-step probabilities to 100% (deterministic) |
+
+![Right-click menu](right-click-meniu.png)
+
+### Per-step probability
+
+Right-click any gate switch to set its trigger probability. The switch LED changes color to indicate the probability level:
+
+| Probability | Switch LED |
+|-------------|------------|
+| 100% | Yellow (deterministic) |
+| 75% / 50% / 25% | Red (probabilistic) |
+| 0% | Off (never triggers) |
+
+Active steps also show a yellow indicator light behind the switch.
+
+![Per-step probability](probability.png)
+
 ## License
 
 GPL-3.0-or-later. See [LICENSE](LICENSE) for details.
