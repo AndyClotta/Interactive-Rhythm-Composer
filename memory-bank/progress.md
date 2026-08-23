@@ -25,10 +25,10 @@
 - README with Clock & Synchronization section (64 PPQN)
 
 ## What's Left to Build
-- No known missing features. Module appears complete at version 1.1.0.
+- No known missing features. Module appears complete at version 2.0.0.
 
 ## Current Status
-- **Version**: 1.1.0
+- **Version**: 2.0.0
 - **Status**: Feature-complete, stable
 - **Build**: Compiles with `make install`, deploys to Rack2 plugins directory
 - **Branch**: `main`
