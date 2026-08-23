@@ -2,18 +2,22 @@
 
 ## Current Work Focus
 - Version 2.4.1 stable — feature-complete
-- Recent round of polish: UI improvements, probability UX, README documentation
+- Panel SVGs renamed from `James.svg` to `Interactive-Rhythm-Composer.svg` (light/dark)
+- Makefile fixed for macOS cross-platform build (explicit SOURCES instead of `find`)
+- README updated with Clock & Synchronization section
 
 ## Recent Changes
+- **Panel rename**: `res/panels/light/James.svg` → `res/panels/light/Interactive-Rhythm-Composer.svg`, `res/panels/dark/James.svg` → `res/panels/dark/Interactive-Rhythm-Composer.svg`
+- **James.cpp**: updated `setPanel()` path to use new SVG filenames
+- **Makefile**: replaced `$(shell find src -name "*.cpp")` with explicit SOURCES list for macOS compatibility
+- **IgnoreClockAfterResetTimer.cpp**: added `#include "plugin.hpp"` first to resolve include circular
+- **README**: added "Clock & Synchronization" section explaining 64 PPQN resolution and micro-timing
 - **GenreRule refactored**: removed `chokeOpenToClosed` (now global), added `has_ratcheting` (Trap), `jitterAmount` (Glitch/Braindance)
 - **GEN_RES[] updated**: House/Techno snare backbeat boosted, D&B 2-step kick, Minimal forced four-on-the-floor, Afro euclid 3/8 on kick, Electro euclid 5/16 on PERC1
-- **generatePatternForGenre()**: global choke (all genres), ratcheting markers (2.0f on HHCL steps 3,7,11,15), euclidean support for kick row
 - **ProbableGateSwitch::draw()**: green fill circle → red stroke ring (2.0f width) for probabilistic steps
 - **Random button/CV**: now resets all `gateProbabilities[]` to 1.0f before generating new pattern
-- **README**: Usage section with right-click menu table, per-step probability table, screenshots
 - **Branch**: migrated from `master` to `main`
 - **.gitignore**: added `*-bk*.svg` pattern
-- Memory bank files created and maintained
 
 ## Next Steps
 - No pending tasks. Module is feature-complete.
@@ -25,6 +29,7 @@
 - Ratcheting stored as `2.0f` marker in pattern array (engine reads it as double-trigger)
 - Jitter amount stored as fraction of step (0.005 = 5ms, 0.010 = 10ms) — processed by clock engine
 - Euclidean now supports two target rows: kick (row 0) and percussion (rows 4/5)
+- Panel SVGs named after the module slug (`Interactive-Rhythm-Composer.svg`) instead of internal codename (`James.svg`)
 
 ## Important Patterns
 - Grid coordinate formulas for gate switches: x = 26.987 + col*10.075, y = 33.867 + row*14.189
@@ -41,3 +46,5 @@
 - `getGateOutputId(row) = row` (0-5)
 - `ProbableGateSwitch` renders BEFORE `SmallSimpleLight<YellowLight>` in draw order → yellow LED visible on top of red ring
 - Euclidean on kick (Afro 3/8) and PERC1 (Electro 5/16) distinguished by `euclidK` value check
+- `$(shell find ...)` in Makefile doesn't work reliably on macOS BSD find → use explicit SOURCES
+- `#include "plugin.hpp"` must come before local headers to avoid include circular with `rack.hpp`

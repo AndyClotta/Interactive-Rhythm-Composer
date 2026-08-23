@@ -15,7 +15,7 @@
 - **State**: `gateProbabilities[96]` (default 1.0f), `selectedGenre`, clock tracker state
 
 ### Widget (JamesWidget)
-- Panel: dual SVG (light/dark) via `ThemedScrew`/`createPanel`
+- Panel: dual SVG (light/dark) via `createPanel` — SVGs named `Interactive-Rhythm-Composer.svg`
 - Custom widgets: `ProbableGateSwitch` (extends `CKD6Latch`), `SteppedRedKnob`, `RedKnob`
 - Grid layout: 6 rows × 16 columns of gate switches + lights
 - Right column: 6 gate outputs
@@ -42,6 +42,7 @@
 - **Ignore clock after reset**: `IgnoreClockAfterResetTimer` prevents false triggers on reset
 - **Gate pulse generation**: `dsp::PulseGenerator[6]` for trigger mode
 - **Per-step probability**: `gateProbabilities[96]` array, checked at clock tick with `random::uniform()`, reset to 1.0f on Random
+- **Cross-platform build**: explicit SOURCES in Makefile (no `$(shell find ...)`) for macOS compatibility
 
 ## GenreRule Struct
 ```cpp

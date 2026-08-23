@@ -14,13 +14,15 @@
 - Genre-based pattern generation (11 genres with refined rules)
 - Random pattern generation (button + CV input) — resets probabilities to 100%
 - Step indicator lights
-- Dual SVG panel (light/dark themes)
+- Dual SVG panel (light/dark themes) — renamed to `Interactive-Rhythm-Composer.svg`
 - ProbableGateSwitch with red stroke ring for probabilistic steps
 - Context menu: randomize all/row, genre generation, clear probabilities
 - Global HH choke (all genres)
 - Euclidean sequencing on KICK (Afro 3/8) and PERC1 (Electro 5/16)
 - Ratcheting markers for Trap (HHCL on steps 3,7,11,15)
 - Microtiming jitter metadata for Glitch (5ms) and Braindance (10ms)
+- Cross-platform build: explicit SOURCES in Makefile (fixes macOS)
+- README with Clock & Synchronization section (64 PPQN)
 
 ## What's Left to Build
 - No known missing features. Module appears complete at version 2.4.1.
@@ -45,3 +47,5 @@
 - Afro kick changed from manual probabilities to Euclidean 3/8
 - Electro PERC1 changed from manual to Euclidean 5/16
 - Random button/CV now clears all probabilities before generating
+- Panel SVGs renamed from `James.svg` to `Interactive-Rhythm-Composer.svg`
+- Makefile switched from `$(shell find ...)` to explicit SOURCES for macOS compatibility

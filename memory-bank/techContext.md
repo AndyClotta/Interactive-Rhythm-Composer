@@ -48,3 +48,13 @@
 /plugin.dll
 .DS_Store
 *-bk*.svg
+```
+
+## Build Configuration
+- **Makefile SOURCES**: explicit list (no `$(shell find ...)`) for cross-platform compatibility:
+  - `src/plugin.cpp`
+  - `src/modules/James/James.cpp`
+  - `src/modules/James/JamesClockTracker.cpp`
+  - `src/utilities/IgnoreClockAfterResetTimer.cpp`
+- **RACK_DIR**: default `/path/to/Rack-SDK`, override via env var
+- **Panel SVGs**: `res/panels/light/Interactive-Rhythm-Composer.svg` and `res/panels/dark/Interactive-Rhythm-Composer.svg`
