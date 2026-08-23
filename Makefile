@@ -11,8 +11,10 @@ CXXFLAGS += -Isrc
 LDFLAGS +=
 
 # Add .cpp files to the build
-# SOURCES += $(wildcard src/*.cpp)
-SOURCES += $(shell find src -name "*.cpp")
+SOURCES += src/plugin.cpp
+SOURCES += src/modules/James/James.cpp
+SOURCES += src/modules/James/JamesClockTracker.cpp
+SOURCES += src/utilities/IgnoreClockAfterResetTimer.cpp
 
 # Add files to the ZIP package when running `make dist`
 # The compiled plugin and "plugin.json" are automatically added.

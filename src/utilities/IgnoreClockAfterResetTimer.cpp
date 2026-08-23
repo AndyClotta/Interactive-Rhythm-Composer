@@ -1,3 +1,4 @@
+#include "plugin.hpp"
 #include "IgnoreClockAfterResetTimer.hpp"
 
 using namespace rack;
