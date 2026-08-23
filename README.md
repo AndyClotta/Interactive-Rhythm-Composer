@@ -23,6 +23,12 @@ Modified and maintained by [AndyClotta](https://github.com/AndyClotta).
 
 ## Usage
 
+### Clock & Synchronization
+
+The module expects a 64x clock resolution (64 pulses per quarter note). At 120 BPM, this translates to a 128 Hz clock signal.
+
+Rather than stepping strictly on a coarse 16th-note grid, this 64 PPQN resolution gives the internal engine 16 tick positions per step, allowing it to apply precise micro-timing variations, humanization, and subtle off-grid feel across different musical styles without drifting.
+
 ### Right-click menu (module panel)
 
 Right-click anywhere on the module panel to open the context menu:
