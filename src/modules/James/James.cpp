@@ -745,7 +745,7 @@ struct JamesWidget : ModuleWidget
 	JamesWidget(James *module)
 	{
 		setModule(module);
-		setPanel(createPanel(asset::plugin(pluginInstance, "res/panels/light/James.svg"),asset::plugin(pluginInstance, "res/panels/dark/James.svg")));
+		setPanel(createPanel(asset::plugin(pluginInstance, "res/panels/light/Interactive-Rhythm-Composer.svg"),asset::plugin(pluginInstance, "res/panels/dark/Interactive-Rhythm-Composer.svg")));
 
 		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
