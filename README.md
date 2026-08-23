@@ -66,7 +66,7 @@ Descargá el plugin compilado desde [GitHub Releases](https://github.com/AndyClo
 
 ### Instalación
 
-1. Descargá `FreezerLabs-2.4.1-win-x64.vcvplugin` del último release
+1. Descargá `FreezerLabs-1.1.0-win-x64.vcvplugin` del último release
 2. Copiá el archivo a la carpeta de plugins de VCV Rack:
    - **Rack 2 Free**: `%LOCALAPPDATA%\Rack2\plugins-win-x64`
    - **Rack 2 Pro**: `%LOCALAPPDATA%\Rack2\plugins-win-x64`
