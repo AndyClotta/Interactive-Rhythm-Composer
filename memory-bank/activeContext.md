@@ -1,7 +1,7 @@
 # Active Context: Interactive Rhythm Composer
 
 ## Current Work Focus
-- Version 2.4.1 stable — feature-complete
+- Version 1.1.0 stable — feature-complete
 - Panel SVGs renamed from `James.svg` to `Interactive-Rhythm-Composer.svg` (light/dark)
 - Makefile fixed for macOS cross-platform build (explicit SOURCES instead of `find`)
 - README updated with Clock & Synchronization section

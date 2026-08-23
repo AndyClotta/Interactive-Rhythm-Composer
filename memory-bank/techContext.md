@@ -13,7 +13,7 @@
 - **Shell**: cmd.exe
 - **Make path**: `C:\msys64\usr\bin\make.exe`
 - **Build command**: `C:\msys64\usr\bin\env.exe PATH="/C/msys64/usr/bin:/C/msys64/mingw64/bin:$PATH" C:\msys64\usr\bin\make.exe install`
-- **Output**: `./dist/FreezerLabs/` and `FreezerLabs-2.4.1-win-x64.vcvplugin`
+- **Output**: `./dist/FreezerLabs/` and `FreezerLabs-1.1.0-win-x64.vcvplugin`
 - **Install path**: `C:\Users\djand\AppData\Local\Rack2\plugins-win-x64`
 
 ## Technical Constraints
