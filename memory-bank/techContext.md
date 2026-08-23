@@ -1,18 +1,20 @@
 # Tech Context: Interactive Rhythm Composer
 
 ## Technologies
-- **Language**: C++17
+- **Language**: C++11 (compiled with `-std=c++11`)
 - **Framework**: VCV Rack SDK 2.x
-- **Build system**: Makefile (via `make install`)
-- **Panel design**: SVG (Inkscape), dual light/dark themes
-- **Dependencies**: VCV Rack SDK (`RACK_DIR`), MSYS2 (Windows)
+- **Build system**: Makefile (via `make install`), MSYS2 on Windows
+- **Panel design**: SVG (Inkscape), dual light/dark themes, nanosvg renderer
+- **Dependencies**: VCV Rack SDK (`RACK_DIR`), MSYS2 (Windows), jq (for plugin.json parsing), zstd (for .vcvplugin packaging)
 
 ## Development Setup
 - **OS**: Windows 11
 - **IDE**: Cursor
 - **Shell**: cmd.exe
-- **Build command**: `make install` (outputs to `./dist`)
-- **Install path**: `AppData\Local\Rack2\plugins-win-x64`
+- **Make path**: `C:\msys64\usr\bin\make.exe`
+- **Build command**: `C:\msys64\usr\bin\env.exe PATH="/C/msys64/usr/bin:/C/msys64/mingw64/bin:$PATH" C:\msys64\usr\bin\make.exe install`
+- **Output**: `./dist/FreezerLabs/` and `FreezerLabs-2.4.1-win-x64.vcvplugin`
+- **Install path**: `C:\Users\djand\AppData\Local\Rack2\plugins-win-x64`
 
 ## Technical Constraints
 - VCV Rack module API: `Module`/`ModuleWidget` base classes
@@ -20,9 +22,12 @@
 - Coordinates in mm, converted via `mm2px(Vec(x, y))`
 - Custom widgets must extend Rack's widget classes (e.g., `CKD6Latch`, `SvgKnob`)
 - `dsp::PulseGenerator`, `dsp::Timer` for timing
+- `random::uniform()` for probability checks (Rack's DSP-safe random)
+- No heap allocations in `process()` callback (DSP real-time safe)
+- Render order: `addParam()` widgets draw before `addChild()` widgets
 
 ## Dependencies
-- VCV Rack SDK (external, set via `RACK_DIR` env var)
+- VCV Rack SDK (external, set via `RACK_DIR` env var, default: `C:/Dev/Rack-SDK`)
 - No external libraries beyond Rack SDK
 
 ## Tool Usage Patterns
@@ -32,3 +37,14 @@
 - `createLightCentered<T>(mm2px(Vec(x, y)), module, LIGHT_ID)` for lights
 - `configSwitch()`, `configParam()`, `configButton()`, `configInput()`, `configOutput()` in constructor
 - Panel sync workflow: edit SVG → extract cx/cy → update C++ mm2px values → compile → copy to plugins dir
+- Genre rules defined as `static const GenreRule GEN_RES[]` in `JamesPatternGenerator.hpp`
+
+## .gitignore
+```
+/build
+/dist
+/plugin.so
+/plugin.dylib
+/plugin.dll
+.DS_Store
+*-bk*.svg
