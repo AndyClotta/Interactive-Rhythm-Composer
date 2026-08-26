@@ -20,7 +20,8 @@
       "description": "6 row drum sequencer with per-row rush/drag controls",
       "tags": [
         "Clock modulator",
-        "Sequencer"
+        "Sequencer",
+        "Drum"
       ],
       "hidden": false
     }

@@ -640,6 +640,7 @@ struct James : Module
 		if (lastResetInput == 0 && resetInput != 0)
 		{
 			reset();
+			ignoreClockAfterResetTimer.resetTriggered();
 		}
 
 		// Handle Random button - generate a new variation of the selected genre
@@ -671,7 +672,8 @@ struct James : Module
 		// calculate if row should pulse
 		if (lastclockVoltage == 0 && clockVoltage != 0 && !ignoreClockAfterResetTimer.shouldIgnore)
 		{
-			clockTracker.nextClock();
+			// Evaluate triggers on the CURRENT step BEFORE advancing the clock,
+			// so that the first sub-tick of each step (rush == 0) can fire.
 			for (int i = 0; i < NUM_ROWS; i++)
 			{
 				if (shouldPulseThisClock(i))
@@ -685,6 +687,8 @@ struct James : Module
 					}
 				}
 			}
+			// Advance to the next sub-tick / step
+			clockTracker.nextClock();
 		}
 
 		// Handle step indicator lights

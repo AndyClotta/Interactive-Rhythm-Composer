@@ -7,7 +7,8 @@
 - All 114 lights (96 gate LEDs + 16 step indicators + 2 mode lights)
 - Internal clock with speed control
 - External clock with passthrough
-- Reset input with ignore-after-reset timer
+- Reset input with ignore-after-reset timer (1ms clock-ignore, now actually triggered on reset)
+- First step correctly fires on clock start AND reset (fixed evaluation-order bug)
 - Rush/Drag per row (-15 to +15)
 - Gate/Trigger mode switch
 - Per-step probability (right-click menu, 0/25/50/75/100%)
@@ -34,9 +35,10 @@
 - **Branch**: `main`
 
 ## Known Issues
-- None documented.
+- None documented (first-tick bug resolved in 2.0.0).
 
 ## Evolution of Project Decisions
+- Fixed "first tick" bug: trigger evaluation was moved BEFORE `nextClock()` advance; `ignoreClockAfterResetTimer.resetTriggered()` now wired into reset branch
 - Forked from Daniel Davies' "James" module
 - Added genre-based pattern generation (Beat Agent concept)
 - Added per-step probability with custom ProbableGateSwitch widget

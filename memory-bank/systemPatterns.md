@@ -58,7 +58,7 @@ struct GenreRule {
 ```
 
 ## Critical Implementation Paths
-1. Clock processing: external/internal → clockTracker.nextClock() → shouldPulseThisClock() → probability check → gatePulseGenerators[i].trigger()
+1. Clock processing: external/internal → shouldPulseThisClock() evaluates triggers on CURRENT step → probability check → gatePulseGenerators[i].trigger() → then clockTracker.nextClock() advances to next sub-tick/step. (Order critical: evaluate BEFORE advance so rush=0 fires on first sub-tick.)
 2. Rush/Drag: getRushValForRow() → clockTracker.setRushForRow() → shouldPulseThisClock() compares rush value with clocksSinceLastStep
 3. Genre generation: generateGatesForGenre() → generatePatternForGenre() → set params
 4. Random button/CV: reset gateProbabilities[] to 1.0f → generateGatesForGenre(selectedGenre)
@@ -67,12 +67,13 @@ struct GenreRule {
 
 ## Data Flow
 ```
-Clock Input → clockTracker.nextClock()
+Clock Input (rising edge)
   → for each row: shouldPulseThisClock(row)?
     → check gate switch state at current/next step
     → check rush/drag timing
     → check probability (gateProbabilities[step])
     → trigger gatePulseGenerator[row]
+  → clockTracker.nextClock() (advance AFTER evaluation)
   → update step indicator lights
   → handle gate mode (trigger/continuous)
   → set output voltages

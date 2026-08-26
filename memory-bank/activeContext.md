@@ -2,11 +2,14 @@
 
 ## Current Work Focus
 - Version 2.0.0 stable — Rack ABI 2 compatible, feature-complete
+- Fixed "first tick" bug (first step never triggered on clock start / reset)
 - Panel SVGs renamed from `James.svg` to `Interactive-Rhythm-Composer.svg` (light/dark)
 - Makefile fixed for macOS cross-platform build (explicit SOURCES instead of `find`)
 - README updated with Clock & Synchronization section
 
 ## Recent Changes
+- **First-tick bug fixed**: `ignoreClockAfterResetTimer.resetTriggered()` now called on reset (was dead code); `clockTracker.nextClock()` moved AFTER trigger evaluation loop (was advancing before evaluating, causing step 0 to be skipped). Both external clock AND internal clock+reset now fire the first step correctly.
+- **plugin.json**: `version` 1.1.0 → 2.0.0, added `rackVersion: 2.0.0` (Rack requires plugin version >= 2.x to match ABI 2)
 - **Panel rename**: `res/panels/light/James.svg` → `res/panels/light/Interactive-Rhythm-Composer.svg`, `res/panels/dark/James.svg` → `res/panels/dark/Interactive-Rhythm-Composer.svg`
 - **James.cpp**: updated `setPanel()` path to use new SVG filenames
 - **Makefile**: replaced `$(shell find src -name "*.cpp")` with explicit SOURCES list for macOS compatibility
@@ -30,6 +33,7 @@
 - Jitter amount stored as fraction of step (0.005 = 5ms, 0.010 = 10ms) — processed by clock engine
 - Euclidean now supports two target rows: kick (row 0) and percussion (rows 4/5)
 - Panel SVGs named after the module slug (`Interactive-Rhythm-Composer.svg`) instead of internal codename (`James.svg`)
+- **Trigger evaluation order**: `shouldPulseThisClock()` evaluated on CURRENT step, THEN `nextClock()` advances — required so rush=0 fires on the first sub-tick
 
 ## Important Patterns
 - Grid coordinate formulas for gate switches: x = 26.987 + col*10.075, y = 33.867 + row*14.189
@@ -41,6 +45,8 @@
 ## Learnings
 - `getRushValForRow()` negates the param value: `-static_cast<int>(params[NUM_GATE_SWITCHES + row].getValue())`
 - `shouldPulseThisClock()` checks both current step (rush) and next step (drag) logic
+- **First-tick root cause**: `nextClock()` was called BEFORE trigger evaluation, so `clocksSinceLastStep` was already 1 when checking `rush(0) == 0`. Fix: evaluate triggers first, advance after. This was NOT a clock-resolution (1x vs 64x) issue — `globalClockDivide = 16` correctly matches Clocked's 64 PPQN (16 pulses per 16th step).
+- `ignoreClockAfterResetTimer` implements Impromptu-style 1ms clock-ignore, but must be explicitly triggered via `resetTriggered()` in the reset branch — otherwise it's dead code.
 - `getButtonId(row, col) = col + (row * 16)` — same formula for lights
 - `getStepLedId(step) = 96 + step` (after gate switches)
 - `getGateOutputId(row) = row` (0-5)
