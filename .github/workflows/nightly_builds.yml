@@ -117,6 +117,7 @@ jobs:
         with:
           path: _artifacts
       - name: Delete old release assets
+        continue-on-error: true
         uses: andreaswilli/delete-release-assets-action@cee1e4ece007d910b3555134b0c8109687469ec3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -129,3 +130,4 @@ jobs:
           file: _artifacts/**/*.vcvplugin
           tag: Nightly
           file_glob: true
+          overwrite: true
