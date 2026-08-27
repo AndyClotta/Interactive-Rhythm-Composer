@@ -12,6 +12,9 @@ on:
     #        | | | | +--------- day of the week (0 - 6 or SUN-SAT)
     - cron: "56 19 * * *" # Every day at 19:56 UTC
 
+permissions:
+  contents: write
+
 env:
   rack-sdk-version: 2.6.6
   rack-plugin-toolchain-dir: /home/build/rack-plugin-toolchain
@@ -113,21 +116,29 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, build-mac]
     steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           path: _artifacts
-      - name: Delete old release assets
-        continue-on-error: true
-        uses: andreaswilli/delete-release-assets-action@cee1e4ece007d910b3555134b0c8109687469ec3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: Nightly
-          deleteOnlyFromDrafts: false
-      - name: Upload release assets
-        uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: _artifacts/**/*.vcvplugin
-          tag: Nightly
-          file_glob: true
-          overwrite: true
+      - name: Create or update Nightly tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag -f Nightly ${{ github.sha }}
+          git push -f origin Nightly
+      - name: Delete existing Nightly release
+        run: |
+          gh release delete Nightly --yes 2>/dev/null || true
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Create Nightly release
+        run: |
+          gh release create Nightly _artifacts/**/*.vcvplugin \
+            --target ${{ github.sha }} \
+            --title "Nightly Build" \
+            --notes "Automated nightly build from commit ${{ github.sha }}. Use at your own risk." \
+            --prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}

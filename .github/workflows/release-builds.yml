@@ -3,6 +3,9 @@ name: Build Plugin and Create Freezer Labs Draft Release
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 env:
   rack-sdk-version: 2.6.6
   rack-plugin-toolchain-dir: /home/build/rack-plugin-toolchain
