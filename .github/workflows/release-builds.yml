@@ -31,7 +31,7 @@ jobs:
         id: query-the-tag
         run: |
           git fetch --prune --unshallow
-          repogittag=`git describe --tags --abbrev=0`
+          repogittag=`git describe --tags --abbrev=0 --match "v*"`
           echo "GIT_TAG=$repogittag" >> "$GITHUB_OUTPUT"
           echo Set tag to latest: \"$repogittag\"
 
