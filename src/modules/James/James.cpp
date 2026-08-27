@@ -555,7 +555,7 @@ struct James : Module
 
 	bool gateTriggerModeEnabled = true;
 
-	int selectedGenre = -1;
+	int selectedGenre = 0;
 	float lastRandomParam = 0.f;
 	float lastRandomInput = 0.f;
 	float gateProbabilities[96] = {};
