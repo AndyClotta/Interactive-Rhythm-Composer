@@ -20,6 +20,7 @@ Modified and maintained by [AndyClotta](https://github.com/AndyClotta).
 - Genre-based pattern generation (11 genres)
 - Random pattern generation
 - Random CV input for external randomization
+- Per-row shift left/right buttons (shifts all 16 steps + per-step probabilities)
 
 ## Usage
 
@@ -55,6 +56,15 @@ Right-click any gate switch to set its trigger probability. The switch LED chang
 Active steps also show a yellow indicator light behind the switch.
 
 ![Per-step probability](probability.png)
+
+### Shift pattern per row
+
+Each row has two arrow buttons (◀ ▶) below its rush/drag knob to shift all 16 steps left or right, wrapping around. Per-step probabilities are shifted together with the gates, so a step configured with 50% probability keeps that probability when moved.
+
+| Button | Action |
+|--------|--------|
+| ◀ | Shift row left (step 1 → step 0, step 2 → step 1, etc.) |
+| ▶ | Shift row right (step 15 → step 0, step 0 → step 1, etc.) |
 
 ## License
 
