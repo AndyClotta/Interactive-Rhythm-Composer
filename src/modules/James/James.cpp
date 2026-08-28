@@ -194,6 +194,18 @@ struct James : Module
 		KNOB_CLOCK_SPEED_PARAM,
 		SWITCH_GATE_MODE_PARAM,
 		SWITCH_RANDOM_PARAM,
+		SWITCH_SHIFT_R0_LEFT_PARAM,
+		SWITCH_SHIFT_R0_RIGHT_PARAM,
+		SWITCH_SHIFT_R1_LEFT_PARAM,
+		SWITCH_SHIFT_R1_RIGHT_PARAM,
+		SWITCH_SHIFT_R2_LEFT_PARAM,
+		SWITCH_SHIFT_R2_RIGHT_PARAM,
+		SWITCH_SHIFT_R3_LEFT_PARAM,
+		SWITCH_SHIFT_R3_RIGHT_PARAM,
+		SWITCH_SHIFT_R4_LEFT_PARAM,
+		SWITCH_SHIFT_R4_RIGHT_PARAM,
+		SWITCH_SHIFT_R5_LEFT_PARAM,
+		SWITCH_SHIFT_R5_RIGHT_PARAM,
 		PARAMS_LEN
 	};
 	enum InputId
@@ -340,6 +352,18 @@ struct James : Module
 		configParam(KNOB_CLOCK_SPEED_PARAM, 0.f, 1.f, 0.5f, "Speed");
 		configSwitch(SWITCH_GATE_MODE_PARAM, 0, 1, 1, "Gate Mode", {"Continuous", "Trigger"});
 		configButton(SWITCH_RANDOM_PARAM, "Random");
+		configButton(SWITCH_SHIFT_R0_LEFT_PARAM, "Shift row 0 left");
+		configButton(SWITCH_SHIFT_R0_RIGHT_PARAM, "Shift row 0 right");
+		configButton(SWITCH_SHIFT_R1_LEFT_PARAM, "Shift row 1 left");
+		configButton(SWITCH_SHIFT_R1_RIGHT_PARAM, "Shift row 1 right");
+		configButton(SWITCH_SHIFT_R2_LEFT_PARAM, "Shift row 2 left");
+		configButton(SWITCH_SHIFT_R2_RIGHT_PARAM, "Shift row 2 right");
+		configButton(SWITCH_SHIFT_R3_LEFT_PARAM, "Shift row 3 left");
+		configButton(SWITCH_SHIFT_R3_RIGHT_PARAM, "Shift row 3 right");
+		configButton(SWITCH_SHIFT_R4_LEFT_PARAM, "Shift row 4 left");
+		configButton(SWITCH_SHIFT_R4_RIGHT_PARAM, "Shift row 4 right");
+		configButton(SWITCH_SHIFT_R5_LEFT_PARAM, "Shift row 5 left");
+		configButton(SWITCH_SHIFT_R5_RIGHT_PARAM, "Shift row 5 right");
 
 		configSwitch(SWITCH_GATE_R0_C0_PARAM, 0, 1, 0, "Gate", {"Off", "On"});
 		configSwitch(SWITCH_GATE_R0_C1_PARAM, 0, 1, 0, "Gate", {"Off", "On"});
@@ -558,6 +582,18 @@ struct James : Module
 	int selectedGenre = 0;
 	float lastRandomParam = 0.f;
 	float lastRandomInput = 0.f;
+	float lastShiftR0L = 0.f;
+	float lastShiftR0R = 0.f;
+	float lastShiftR1L = 0.f;
+	float lastShiftR1R = 0.f;
+	float lastShiftR2L = 0.f;
+	float lastShiftR2R = 0.f;
+	float lastShiftR3L = 0.f;
+	float lastShiftR3R = 0.f;
+	float lastShiftR4L = 0.f;
+	float lastShiftR4R = 0.f;
+	float lastShiftR5L = 0.f;
+	float lastShiftR5R = 0.f;
 	float gateProbabilities[96] = {};
 
 	bool shouldPulseThisClock(short row)
@@ -602,6 +638,32 @@ struct James : Module
 	void reset()
 	{
 		clockTracker.reset();
+	}
+
+	void shiftRowLeft(int row)
+	{
+		float first = params[getButtonId(row, 0)].getValue();
+		float firstProb = gateProbabilities[getButtonId(row, 0)];
+		for (int col = 0; col < NUM_STEPS - 1; col++)
+		{
+			params[getButtonId(row, col)].setValue(params[getButtonId(row, col + 1)].getValue());
+			gateProbabilities[getButtonId(row, col)] = gateProbabilities[getButtonId(row, col + 1)];
+		}
+		params[getButtonId(row, NUM_STEPS - 1)].setValue(first);
+		gateProbabilities[getButtonId(row, NUM_STEPS - 1)] = firstProb;
+	}
+
+	void shiftRowRight(int row)
+	{
+		float last = params[getButtonId(row, NUM_STEPS - 1)].getValue();
+		float lastProb = gateProbabilities[getButtonId(row, NUM_STEPS - 1)];
+		for (int col = NUM_STEPS - 1; col > 0; col--)
+		{
+			params[getButtonId(row, col)].setValue(params[getButtonId(row, col - 1)].getValue());
+			gateProbabilities[getButtonId(row, col)] = gateProbabilities[getButtonId(row, col - 1)];
+		}
+		params[getButtonId(row, 0)].setValue(last);
+		gateProbabilities[getButtonId(row, 0)] = lastProb;
 	}
 
 	void process(const ProcessArgs &args) override
@@ -662,6 +724,44 @@ struct James : Module
 			generateGatesForGenre(selectedGenre);
 		}
 		lastRandomInput = randomInput;
+
+		// Handle shift buttons - edge detection
+		float shiftR0L = params[SWITCH_SHIFT_R0_LEFT_PARAM].getValue();
+		if (lastShiftR0L == 0.f && shiftR0L != 0.f) shiftRowLeft(0);
+		lastShiftR0L = shiftR0L;
+		float shiftR0R = params[SWITCH_SHIFT_R0_RIGHT_PARAM].getValue();
+		if (lastShiftR0R == 0.f && shiftR0R != 0.f) shiftRowRight(0);
+		lastShiftR0R = shiftR0R;
+		float shiftR1L = params[SWITCH_SHIFT_R1_LEFT_PARAM].getValue();
+		if (lastShiftR1L == 0.f && shiftR1L != 0.f) shiftRowLeft(1);
+		lastShiftR1L = shiftR1L;
+		float shiftR1R = params[SWITCH_SHIFT_R1_RIGHT_PARAM].getValue();
+		if (lastShiftR1R == 0.f && shiftR1R != 0.f) shiftRowRight(1);
+		lastShiftR1R = shiftR1R;
+		float shiftR2L = params[SWITCH_SHIFT_R2_LEFT_PARAM].getValue();
+		if (lastShiftR2L == 0.f && shiftR2L != 0.f) shiftRowLeft(2);
+		lastShiftR2L = shiftR2L;
+		float shiftR2R = params[SWITCH_SHIFT_R2_RIGHT_PARAM].getValue();
+		if (lastShiftR2R == 0.f && shiftR2R != 0.f) shiftRowRight(2);
+		lastShiftR2R = shiftR2R;
+		float shiftR3L = params[SWITCH_SHIFT_R3_LEFT_PARAM].getValue();
+		if (lastShiftR3L == 0.f && shiftR3L != 0.f) shiftRowLeft(3);
+		lastShiftR3L = shiftR3L;
+		float shiftR3R = params[SWITCH_SHIFT_R3_RIGHT_PARAM].getValue();
+		if (lastShiftR3R == 0.f && shiftR3R != 0.f) shiftRowRight(3);
+		lastShiftR3R = shiftR3R;
+		float shiftR4L = params[SWITCH_SHIFT_R4_LEFT_PARAM].getValue();
+		if (lastShiftR4L == 0.f && shiftR4L != 0.f) shiftRowLeft(4);
+		lastShiftR4L = shiftR4L;
+		float shiftR4R = params[SWITCH_SHIFT_R4_RIGHT_PARAM].getValue();
+		if (lastShiftR4R == 0.f && shiftR4R != 0.f) shiftRowRight(4);
+		lastShiftR4R = shiftR4R;
+		float shiftR5L = params[SWITCH_SHIFT_R5_LEFT_PARAM].getValue();
+		if (lastShiftR5L == 0.f && shiftR5L != 0.f) shiftRowLeft(5);
+		lastShiftR5L = shiftR5L;
+		float shiftR5R = params[SWITCH_SHIFT_R5_RIGHT_PARAM].getValue();
+		if (lastShiftR5R == 0.f && shiftR5R != 0.f) shiftRowRight(5);
+		lastShiftR5R = shiftR5R;
 
 		// set rush/drag values
 		for (int i = 0; i < NUM_ROWS; i++)
@@ -762,11 +862,23 @@ struct JamesWidget : ModuleWidget
 		addParam(createParamCentered<CKD6InvisibleLatch>(mm2px(Vec(151.611, 16.145)), module, James::SWITCH_GATE_MODE_PARAM));
 
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 33.874)), module, James::KNOB_RUSH_R0_PARAM));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(10.938, 40.741)), module, James::SWITCH_SHIFT_R0_LEFT_PARAM));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(15.267, 40.737)), module, James::SWITCH_SHIFT_R0_RIGHT_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 48.056)), module, James::KNOB_RUSH_R1_PARAM));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(10.954, 54.924)), module, James::SWITCH_SHIFT_R1_LEFT_PARAM));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(15.283, 54.921)), module, James::SWITCH_SHIFT_R1_RIGHT_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 62.238)), module, James::KNOB_RUSH_R2_PARAM));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(10.957, 69.109)), module, James::SWITCH_SHIFT_R2_LEFT_PARAM));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(15.286, 69.105)), module, James::SWITCH_SHIFT_R2_RIGHT_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 76.419)), module, James::KNOB_RUSH_R3_PARAM));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(10.953, 83.281)), module, James::SWITCH_SHIFT_R3_LEFT_PARAM));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(15.282, 83.278)), module, James::SWITCH_SHIFT_R3_RIGHT_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 90.601)), module, James::KNOB_RUSH_R4_PARAM));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(10.950, 97.459)), module, James::SWITCH_SHIFT_R4_LEFT_PARAM));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(15.279, 97.455)), module, James::SWITCH_SHIFT_R4_RIGHT_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 104.783)), module, James::KNOB_RUSH_R5_PARAM));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(10.952, 111.639)), module, James::SWITCH_SHIFT_R5_LEFT_PARAM));
+		addParam(createParamCentered<CKD6>(mm2px(Vec(15.281, 111.635)), module, James::SWITCH_SHIFT_R5_RIGHT_PARAM));
 
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 33.867)), module, James::SWITCH_GATE_R0_C0_PARAM);
