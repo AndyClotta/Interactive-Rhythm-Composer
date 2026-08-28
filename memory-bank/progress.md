@@ -23,6 +23,8 @@
 - Ratcheting markers for Trap (HHCL on steps 3,7,11,15)
 - Microtiming jitter metadata for Glitch (5ms) and Braindance (10ms)
 - Cross-platform build: explicit SOURCES in Makefile (fixes macOS)
+- Per-row shift left/right buttons (12 themed SVG buttons, per-step probability shifts together)
+- Default genre set to House (0) so Random button works on fresh module
 - README with Clock & Synchronization section (64 PPQN)
 
 ## What's Left to Build

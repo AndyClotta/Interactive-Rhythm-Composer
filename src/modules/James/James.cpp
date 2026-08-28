@@ -865,20 +865,20 @@ struct JamesWidget : ModuleWidget
 		addParam(createParamCentered<ShiftArrowButtonLeft>(mm2px(Vec(10.938, 40.741)), module, James::SWITCH_SHIFT_R0_LEFT_PARAM));
 		addParam(createParamCentered<ShiftArrowButtonRight>(mm2px(Vec(15.267, 40.737)), module, James::SWITCH_SHIFT_R0_RIGHT_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 48.056)), module, James::KNOB_RUSH_R1_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(10.954, 54.924)), module, James::SWITCH_SHIFT_R1_LEFT_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(15.283, 54.921)), module, James::SWITCH_SHIFT_R1_RIGHT_PARAM));
+		addParam(createParamCentered<ShiftArrowButtonLeft>(mm2px(Vec(10.954, 54.924)), module, James::SWITCH_SHIFT_R1_LEFT_PARAM));
+		addParam(createParamCentered<ShiftArrowButtonRight>(mm2px(Vec(15.283, 54.921)), module, James::SWITCH_SHIFT_R1_RIGHT_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 62.238)), module, James::KNOB_RUSH_R2_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(10.957, 69.109)), module, James::SWITCH_SHIFT_R2_LEFT_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(15.286, 69.105)), module, James::SWITCH_SHIFT_R2_RIGHT_PARAM));
+		addParam(createParamCentered<ShiftArrowButtonLeft>(mm2px(Vec(10.957, 69.109)), module, James::SWITCH_SHIFT_R2_LEFT_PARAM));
+		addParam(createParamCentered<ShiftArrowButtonRight>(mm2px(Vec(15.286, 69.105)), module, James::SWITCH_SHIFT_R2_RIGHT_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 76.419)), module, James::KNOB_RUSH_R3_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(10.953, 83.281)), module, James::SWITCH_SHIFT_R3_LEFT_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(15.282, 83.278)), module, James::SWITCH_SHIFT_R3_RIGHT_PARAM));
+		addParam(createParamCentered<ShiftArrowButtonLeft>(mm2px(Vec(10.953, 83.281)), module, James::SWITCH_SHIFT_R3_LEFT_PARAM));
+		addParam(createParamCentered<ShiftArrowButtonRight>(mm2px(Vec(15.282, 83.278)), module, James::SWITCH_SHIFT_R3_RIGHT_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 90.601)), module, James::KNOB_RUSH_R4_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(10.950, 97.459)), module, James::SWITCH_SHIFT_R4_LEFT_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(15.279, 97.455)), module, James::SWITCH_SHIFT_R4_RIGHT_PARAM));
+		addParam(createParamCentered<ShiftArrowButtonLeft>(mm2px(Vec(10.950, 97.459)), module, James::SWITCH_SHIFT_R4_LEFT_PARAM));
+		addParam(createParamCentered<ShiftArrowButtonRight>(mm2px(Vec(15.279, 97.455)), module, James::SWITCH_SHIFT_R4_RIGHT_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 104.783)), module, James::KNOB_RUSH_R5_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(10.952, 111.639)), module, James::SWITCH_SHIFT_R5_LEFT_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(15.281, 111.635)), module, James::SWITCH_SHIFT_R5_RIGHT_PARAM));
+		addParam(createParamCentered<ShiftArrowButtonLeft>(mm2px(Vec(10.952, 111.639)), module, James::SWITCH_SHIFT_R5_LEFT_PARAM));
+		addParam(createParamCentered<ShiftArrowButtonRight>(mm2px(Vec(15.281, 111.635)), module, James::SWITCH_SHIFT_R5_RIGHT_PARAM));
 
 		{
 			ProbableGateSwitch *sw = createParamCentered<ProbableGateSwitch>(mm2px(Vec(26.987, 33.867)), module, James::SWITCH_GATE_R0_C0_PARAM);

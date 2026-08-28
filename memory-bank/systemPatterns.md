@@ -16,7 +16,7 @@
 
 ### Widget (JamesWidget)
 - Panel: dual SVG (light/dark) via `createPanel` — SVGs named `Interactive-Rhythm-Composer.svg`
-- Custom widgets: `ProbableGateSwitch` (extends `CKD6Latch`), `SteppedRedKnob`, `RedKnob`
+- Custom widgets: `ProbableGateSwitch` (extends `CKD6Latch`), `SteppedRedKnob`, `RedKnob`, `ShiftArrowButtonLeft`, `ShiftArrowButtonRight`
 - Grid layout: 6 rows × 16 columns of gate switches + lights
 - Right column: 6 gate outputs
 - Left column: 6 rush knobs
@@ -26,6 +26,7 @@
 - `ProbableGateSwitch`: CKD6 latch with right-click probability menu + red stroke ring (2px) for probabilistic steps + dark background overlay to hide underlying red LED
 - `SteppedRedKnob`: stepped knob for rush/drag and step count
 - `RedKnob`: continuous knob for clock speed
+- `ShiftArrowButtonLeft` / `ShiftArrowButtonRight`: momentary SVG switches with themed light/dark arrow SVGs, used for per-row step shifting
 
 ### Render Order (per step)
 1. `ProbableGateSwitch` (addParam) — draws dark cover + red ring if probabilistic
@@ -43,6 +44,7 @@
 - **Gate pulse generation**: `dsp::PulseGenerator[6]` for trigger mode
 - **Per-step probability**: `gateProbabilities[96]` array, checked at clock tick with `random::uniform()`, reset to 1.0f on Random
 - **Cross-platform build**: explicit SOURCES in Makefile (no `$(shell find ...)`) for macOS compatibility
+- **Shift buttons**: `shiftRowLeft(row)` / `shiftRowRight(row)` rotate a row's 16 steps (gate + probability) with wrap-around. Uses `lastShiftR*` edge detection in `process()`. Buttons are `ShiftArrowButtonLeft`/`ShiftArrowButtonRight` widgets with themed SVGs.
 
 ## GenreRule Struct
 ```cpp

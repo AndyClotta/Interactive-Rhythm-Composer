@@ -3,11 +3,14 @@
 ## Current Work Focus
 - Version 2.0.0 stable — Rack ABI 2 compatible, feature-complete
 - Fixed "first tick" bug (first step never triggered on clock start / reset)
+- Added per-row shift left/right buttons with themed SVG arrows
+- Per-step probability shifts together with gates when shifting a row
 - Panel SVGs renamed from `James.svg` to `Interactive-Rhythm-Composer.svg` (light/dark)
 - Makefile fixed for macOS cross-platform build (explicit SOURCES instead of `find`)
 - README updated with Clock & Synchronization section
 
 ## Recent Changes
+- **Per-row shift buttons**: 12 `ShiftArrowButton` widgets (6 left + 6 right) with themed SVG arrows (light/dark). Each row rotates its 16 steps left/right with wrap-around, shifting both gates AND per-step probabilities together.
 - **First-tick bug fixed**: `ignoreClockAfterResetTimer.resetTriggered()` now called on reset (was dead code); `clockTracker.nextClock()` moved AFTER trigger evaluation loop (was advancing before evaluating, causing step 0 to be skipped). Both external clock AND internal clock+reset now fire the first step correctly.
 - **plugin.json**: `version` 1.1.0 → 2.0.0, added `rackVersion: 2.0.0` (Rack requires plugin version >= 2.x to match ABI 2)
 - **Panel rename**: `res/panels/light/James.svg` → `res/panels/light/Interactive-Rhythm-Composer.svg`, `res/panels/dark/James.svg` → `res/panels/dark/Interactive-Rhythm-Composer.svg`
@@ -34,6 +37,7 @@
 - Euclidean now supports two target rows: kick (row 0) and percussion (rows 4/5)
 - Panel SVGs named after the module slug (`Interactive-Rhythm-Composer.svg`) instead of internal codename (`James.svg`)
 - **Trigger evaluation order**: `shouldPulseThisClock()` evaluated on CURRENT step, THEN `nextClock()` advances — required so rush=0 fires on the first sub-tick
+- **Shift buttons**: `ShiftArrowButtonLeft`/`ShiftArrowButtonRight` momentary SVG switches, themed light/dark. Shift copies both gate state and gateProbabilities to maintain consistency.
 
 ## Important Patterns
 - Grid coordinate formulas for gate switches: x = 26.987 + col*10.075, y = 33.867 + row*14.189
