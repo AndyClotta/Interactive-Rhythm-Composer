@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="3.474mm"
+   height="2.8840001mm"
+   viewBox="0 0 3.474 2.8840001"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="layer1">
+    <g
+       id="use1-2"
+       style="fill:#2c5aa0;fill-opacity:1;stroke:#000000"
+       transform="matrix(-0.06554368,0,0,-0.06554368,4.1292518,3.8015334)">
+      <title
+         id="title39">Right Arrow</title>
+      <path
+         d="M 10,36 32,14 H 47 L 31,30 H 63 V 42 H 31 L 47,58 H 32 Z"
+         style="fill:#ffffff;fill-opacity:1;stroke:none"
+         id="path39" />
+    </g>
+  </g>
+</svg>

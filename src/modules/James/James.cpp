@@ -862,8 +862,8 @@ struct JamesWidget : ModuleWidget
 		addParam(createParamCentered<CKD6InvisibleLatch>(mm2px(Vec(151.611, 16.145)), module, James::SWITCH_GATE_MODE_PARAM));
 
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 33.874)), module, James::KNOB_RUSH_R0_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(10.938, 40.741)), module, James::SWITCH_SHIFT_R0_LEFT_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(15.267, 40.737)), module, James::SWITCH_SHIFT_R0_RIGHT_PARAM));
+		addParam(createParamCentered<ShiftArrowButtonLeft>(mm2px(Vec(10.938, 40.741)), module, James::SWITCH_SHIFT_R0_LEFT_PARAM));
+		addParam(createParamCentered<ShiftArrowButtonRight>(mm2px(Vec(15.267, 40.737)), module, James::SWITCH_SHIFT_R0_RIGHT_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(13.135, 48.056)), module, James::KNOB_RUSH_R1_PARAM));
 		addParam(createParamCentered<CKD6>(mm2px(Vec(10.954, 54.924)), module, James::SWITCH_SHIFT_R1_LEFT_PARAM));
 		addParam(createParamCentered<CKD6>(mm2px(Vec(15.283, 54.921)), module, James::SWITCH_SHIFT_R1_RIGHT_PARAM));
