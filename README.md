@@ -1,6 +1,6 @@
 # Freezer Labs - Interactive Rhythm Composer for VCV Rack
 
-![Interactive Rhythm Composer](Interactive-Rhythm-Composer.png)
+![Interactive Rhythm Composer](InteractiveRhythmComposer.webp)
 
 6 row drum sequencer with per-row rush/drag controls, built-in clock, genre-based pattern generation, and per-step probability.
 
