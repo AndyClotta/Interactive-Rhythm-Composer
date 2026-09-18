@@ -26,18 +26,20 @@
 - Per-row shift left/right buttons (12 themed SVG buttons, per-step probability shifts together)
 - Default genre set to House (0) so Random button works on fresh module
 - README with Clock & Synchronization section (64 PPQN)
+- **2.0.1 manifest fix**: valid tags `["Sequencer", "Random", "Clock modulator"]`, version bumped for VCV Library resubmission
 
 ## What's Left to Build
 - No known missing features. Module appears complete at version 2.0.0.
 
 ## Current Status
-- **Version**: 2.0.0
+- **Version**: 2.0.1
 - **Status**: Feature-complete, stable
 - **Build**: Compiles with `make install`, deploys to Rack2 plugins directory
 - **Branch**: `main`
+- **Notes**: VCV Library rejected 2.0.0 twice — invalid tag `"Drum Sequencer"` and version not greater than existing 2.0.0. Fixed in 2.0.1.
 
 ## Known Issues
-- None documented (first-tick bug resolved in 2.0.0).
+- None documented (first-tick bug resolved in 2.0.0; Library manifest validation errors resolved in 2.0.1).
 
 ## Evolution of Project Decisions
 - Fixed "first tick" bug: trigger evaluation was moved BEFORE `nextClock()` advance; `ignoreClockAfterResetTimer.resetTriggered()` now wired into reset branch

@@ -1,7 +1,9 @@
 # Active Context: Interactive Rhythm Composer
 
 ## Current Work Focus
-- Version 2.0.0 stable — Rack ABI 2 compatible, feature-complete
+- Version 2.0.1 stable — Rack ABI 2 compatible, feature-complete
+- VCV Library resubmission fix: removed invalid module tag `"Drum Sequencer"` (not in Rack's tag database) → canonical `"Sequencer"`; plugin version bumped 2.0.0 → 2.0.1 so the new release is strictly greater
+- Binaries rebuilt: `FreezerLabs-2.0.1-win-x64.vcvplugin`, manifest regenerated from fixed `plugin.json`
 - Fixed "first tick" bug (first step never triggered on clock start / reset)
 - Added per-row shift left/right buttons with themed SVG arrows
 - Per-step probability shifts together with gates when shifting a row
@@ -10,9 +12,12 @@
 - README updated with Clock & Synchronization section
 
 ## Recent Changes
+- **plugin.json (2.0.1)**: `"Drum Sequencer"` tag removed (VCV Library validation rejects it — not in Rack's `tag.cpp` alias list); kept valid tags `Sequencer`, `Random`, `Clock modulator`. `version` 2.0.0 → 2.0.1 (Library rejected 2.0.0 as "not greater than" the existing 2.0.0).
+- **README**: download filename updated to `FreezerLabs-2.0.1-win-x64.vcvplugin`
+- **Rebuilt dist**: stale `dist/FreezerLabs/plugin.json` (old tag set/description) replaced; new `FreezerLabs-2.0.1-win-x64.vcvplugin` matches repo manifest
 - **Per-row shift buttons**: 12 `ShiftArrowButton` widgets (6 left + 6 right) with themed SVG arrows (light/dark). Each row rotates its 16 steps left/right with wrap-around, shifting both gates AND per-step probabilities together.
 - **First-tick bug fixed**: `ignoreClockAfterResetTimer.resetTriggered()` now called on reset (was dead code); `clockTracker.nextClock()` moved AFTER trigger evaluation loop (was advancing before evaluating, causing step 0 to be skipped). Both external clock AND internal clock+reset now fire the first step correctly.
-- **plugin.json**: `version` 1.1.0 → 2.0.0, added `rackVersion: 2.0.0` (Rack requires plugin version >= 2.x to match ABI 2)
+- **plugin.json**: `version` 2.0.1 (2.0.0 → 2.0.1), `rackVersion: 2.0.0` (Rack requires plugin version >= 2.x to match ABI 2) — 2.0.1 required because the Library rejected the 2.0.0 resubmission as not strictly greater
 - **Panel rename**: `res/panels/light/James.svg` → `res/panels/light/Interactive-Rhythm-Composer.svg`, `res/panels/dark/James.svg` → `res/panels/dark/Interactive-Rhythm-Composer.svg`
 - **James.cpp**: updated `setPanel()` path to use new SVG filenames
 - **Makefile**: replaced `$(shell find src -name "*.cpp")` with explicit SOURCES list for macOS compatibility
@@ -26,7 +31,7 @@
 - **.gitignore**: added `*-bk*.svg` pattern
 
 ## Next Steps
-- No pending tasks. Module is feature-complete.
+- No pending tasks. Module is feature-complete at 2.0.1; awaiting VCV Library resubmission outcome.
 
 ## Active Decisions
 - Choke is global and unconditional: if HHABT (row 3) fires, HHCL (row 2) is silenced — applies to ALL genres
@@ -38,6 +43,7 @@
 - Panel SVGs named after the module slug (`Interactive-Rhythm-Composer.svg`) instead of internal codename (`James.svg`)
 - **Trigger evaluation order**: `shouldPulseThisClock()` evaluated on CURRENT step, THEN `nextClock()` advances — required so rush=0 fires on the first sub-tick
 - **Shift buttons**: `ShiftArrowButtonLeft`/`ShiftArrowButtonRight` momentary SVG switches, themed light/dark. Shift copies both gate state and gateProbabilities to maintain consistency.
+- **Manifest tags**: MUST use canonical tags from Rack's `tag.cpp` alias list (e.g. `Sequencer`, `Random`, `Clock modulator`, `Drum`). `"Drum Sequencer"` is invalid and fails Library manifest validation.
 
 ## Important Patterns
 - Grid coordinate formulas for gate switches: x = 26.987 + col*10.075, y = 33.867 + row*14.189
